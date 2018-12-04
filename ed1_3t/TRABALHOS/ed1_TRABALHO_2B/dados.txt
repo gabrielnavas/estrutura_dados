@@ -1,0 +1,27 @@
+Partido_socialista 10
+Joaquim 103 50
+Caquinho 102 52
+Maria 101 0
+Joao 100 49
+--
+Partido_comunista 20
+Juquinha 110 0
+Tafarel 109 0
+PrudenteMais 108 0
+MolhoVerde 107 5
+--
+Partido_capitalista 30
+Goku 114 0
+Vandame 113 35
+Aldoed 112 59
+Goten 111 0
+--
+psdb 25
+Hudsah 1000 48
+hudsonMalafaia 99 66
+--
+Partido_farrapeiros 69
+galinhaMan 23 44
+--
+Partido_test 9999
+--

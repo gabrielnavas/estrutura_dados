@@ -1,0 +1,10 @@
+Filme com maior lucro;	
+Filme com maior taxa de espectadores;	
+Duração média dos filmes;	
+O ano em que houve o maior número de filmes produzidos;	
+Gerar um relatório com os filmes separados pela classificação;	
+Gerar um arquivo binário com os filmes ordenados pelo ano de produção;	
+Gerar um arquivo binário com os filmes ordenados pela taxa de espectadores -> da menor para a maior;	
+Encontre o valor mediano para o ano de produção => colocar em ordem por ano de produção e descobrir o ano na posição central.	
+	Quando a quantidade for ímpar, pegar o elemento central, caso contrário, pegar a média dos dois elementos mais centrais;
+Implementar um gráfico de dispersão ou de linha -> eixos Ano X Quantidade de filmes produzidos.	

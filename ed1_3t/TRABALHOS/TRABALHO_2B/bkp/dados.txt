@@ -1,0 +1,25 @@
+Partido_socialista 10
+Joaquim 103 0
+Caquinho 102 2
+Maria 101 0
+Joao 100 0
+--
+Partido_comunista 20
+Joao 106 0
+MolhoVerde 107 5
+PrudenteMais 108 0
+Tafarel 109 0
+Juquinha 110 0
+--
+Partido_capitalista 30
+Goten 111 0
+Aldoed 112 0
+Vandame 113 3
+Goku 114 0
+--
+Partido_doCaminhao 40
+Goten2 200 0
+Aldoed2 300 0
+Vandame2 400 3
+Goku2 500 0
+--
