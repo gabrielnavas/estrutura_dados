@@ -37,3 +37,23 @@ void inserir_lista_vars_argumento_func(pVars_prototipo ** vc, int tipo, char pon
 	}	
 }
 
+
+void copy_lista_vars_prototipo_all(pVars_prototipo **destino, pVars_prototipo * origin)
+{
+	StrDin * nome;
+	StrDin * valor;
+	
+	//destino inicido la fora
+	while(origin != NULL)
+	{
+		init_str(&nome);
+		copy_str_rec(&nome, origin->nome);
+		
+		init_str(&valor);
+		copy_str_rec(&valor, origin->valor);
+		
+		inserir_lista_vars_argumento_func(&*destino, origin->tipo, origin->pont , nome, valor);
+		
+		origin = origin->prox;
+	}
+}

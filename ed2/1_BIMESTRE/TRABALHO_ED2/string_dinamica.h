@@ -63,7 +63,7 @@ int count_str(StrDin * str)
 	int count=0;
 	while(str != NULL)
 	{
-		count ++;
+		count++;
 		str=str->prox;
 	}
 	
@@ -75,7 +75,7 @@ void exibir_str(StrDin * str)
 {
 	while(str != NULL)
 	{
-		printf("%d", count_str(str));
+		//printf("%d", count_str(str));
 		printf("%c", str->ch);
 		str = str->prox;
 	}

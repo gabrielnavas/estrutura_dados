@@ -4,6 +4,7 @@ struct lista_variaveis_execucao
 	int endereco;
 	StrDin * nome;
 	StrDin * valor;
+	int valor_endereco;
 	char ponteiro;
 	
 	struct lista_variaveis_execucao * prox;
@@ -16,7 +17,7 @@ void init_listas_vars_main(pListaVar ** lvm)
 	*lvm = NULL;
 }
 
-void inserir_listas_vars(pListaVar ** lvm, StrDin * nome, StrDin * valor, char ponteiro)
+void inserir_listas_vars(pListaVar ** lvm, StrDin * nome, StrDin * valor, int  valor_endereco, char ponteiro)
 {
 	pListaVar * novo, *aux;
 	
@@ -24,6 +25,7 @@ void inserir_listas_vars(pListaVar ** lvm, StrDin * nome, StrDin * valor, char p
 	
 	novo->nome = nome;
 	novo->valor = valor;
+	novo->valor_endereco = valor_endereco;
 	novo->ponteiro = ponteiro;
 	novo->prox = NULL;
 	
@@ -45,12 +47,44 @@ void inserir_listas_vars(pListaVar ** lvm, StrDin * nome, StrDin * valor, char p
 	}		
 }
 
-pListaVar * search_lista_vars(pListaVar * lvm, StrDin * nome)
+pListaVar * search_lista_vars_nome_strdin(pListaVar * lvm, StrDin * nome)
+{
+	//char igual;
+	
+	//exibir_str(nome);
+	while(lvm != NULL && !strdin_igual(lvm->nome, nome))
+		lvm = lvm->prox;
+	
+	
+	return lvm;	
+}
+
+pListaVar * search_lista_vars_nome_char(pListaVar * lvm, char * str)
+{
+	//char igual;
+	StrDin * nome_ = NULL;
+	
+	int i=0;
+	while(str[i] != '\n' && str[i] != '\0')
+	{
+		inserir_char(&nome_, str[i]);
+		i++;
+	}	
+	
+	//exibir_str(nome);
+	while(lvm != NULL && !strdin_igual(lvm->nome, nome_))
+		lvm = lvm->prox;
+	
+	reinit_str(&nome_);
+	return lvm;	
+}
+
+pListaVar * search_lista_vars_endereco(pListaVar * lvm, int endereco)
 {
 	char igual;
 	
-	exibir_str(nome);
-	while(lvm != NULL && !strdin_igual(lvm->nome, nome))
+	//exibir_str(nome);
+	while(lvm != NULL && lvm->endereco != endereco)
 		lvm = lvm->prox;
 	
 	return lvm;	

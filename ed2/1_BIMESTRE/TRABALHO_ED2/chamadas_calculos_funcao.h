@@ -33,3 +33,19 @@ void inserir_lista_linhas_interna_func(pLinhas_func ** lf, int tipo, StrDin * li
 	}	
 }
 
+void copy_ListaLinhas_func(pLinhas_func ** destino, pLinhas_func * origin)
+{
+	StrDin * linha;
+	int tipo;
+	
+	while(origin != NULL)
+	{
+		init_str(&linha);
+		copy_str_rec(&linha, origin->linha);
+		
+		inserir_lista_linhas_interna_func(&*destino, tipo, linha);
+		
+		origin = origin->prox;
+	}
+}
+
