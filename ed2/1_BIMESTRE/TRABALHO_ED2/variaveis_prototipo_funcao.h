@@ -37,6 +37,22 @@ void inserir_lista_vars_argumento_func(pVars_prototipo ** vc, int tipo, char pon
 	}	
 }
 
+void reinit_lista_vars_argumento_func_rec(pVars_prototipo **vc)
+{
+	pVars_prototipo * aux;
+		
+	if(*vc != NULL)
+	{
+		reinit_str(&(*vc)->nome);
+		reinit_str(&(*vc)->valor);
+		
+		aux = *vc;
+		*vc = (*vc)->prox;
+		free(aux);
+		
+		reinit_lista_vars_argumento_func_rec(&*vc);
+	}
+}
 
 void copy_lista_vars_prototipo_all(pVars_prototipo **destino, pVars_prototipo * origin)
 {

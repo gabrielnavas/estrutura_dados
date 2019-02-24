@@ -47,6 +47,24 @@ void inserir_listas_vars(pListaVar ** lvm, StrDin * nome, StrDin * valor, int  v
 	}		
 }
 
+void change_valor_valor_lista_listas_vars(pListaVar * lvm, int valor)
+{
+	char str[20];
+	int i;
+	
+	if(lvm != NULL)
+	{
+		sprintf(str, "%d", valor);
+		reinit_str(&(lvm)->valor);
+		
+		i=0;
+		while(str[i] != '\0' && str[i] != '\n')
+			inserir_char(&lvm->valor, str[i++]);
+			
+//		exibir_str(lvm->valor);	
+	}	
+}
+
 pListaVar * search_lista_vars_nome_strdin(pListaVar * lvm, StrDin * nome)
 {
 	//char igual;
@@ -80,9 +98,7 @@ pListaVar * search_lista_vars_nome_char(pListaVar * lvm, char * str)
 }
 
 pListaVar * search_lista_vars_endereco(pListaVar * lvm, int endereco)
-{
-	char igual;
-	
+{	
 	//exibir_str(nome);
 	while(lvm != NULL && lvm->endereco != endereco)
 		lvm = lvm->prox;
@@ -92,13 +108,20 @@ pListaVar * search_lista_vars_endereco(pListaVar * lvm, int endereco)
 
 void exibir_listas_vars(pListaVar * lv)
 {
+	
+	printf("&\tNOME\tVALOR\n");
 	while(lv != NULL)
 	{
-		printf("%s", (lv->ponteiro==1) ? "*":" ");
+		//printf("%s", (lv->ponteiro==1) ? "*":" ");
+		printf("\n%d", lv->endereco);
+		printf("\t");
 		exibir_str(lv->nome);
-		exibir_str(lv->valor);
+		printf("\t");
+		if(lv->ponteiro)
+			printf("%d", lv->valor_endereco);
+		else
+			exibir_str(lv->valor);	
 		
-		printf("\n");
 		lv = lv->prox;
 	}
 }

@@ -124,6 +124,19 @@ StrDin * vetchar_to_strDin(char *str)
 	return novo;	
 }
 
+void strdin_to_chars(StrDin * str, char * char_str, int *tl)
+{
+	int i=0;
+	while(str != NULL)
+	{
+		char_str[i] = str->ch;
+		i++;
+		(*tl)++;
+		str=str->prox;
+	}
+}
+
+
 void copy_str(StrDin ** dest, char * origin)
 {
 	int i;
@@ -140,8 +153,9 @@ void copy_str_rec(StrDin ** dest, StrDin * origin)
 {
     if(origin != NULL)
     {
+    	//printf("%c", origin->ch);
 		inserir_char(&(*dest), origin->ch);
-		origin = origin->prox;
+		copy_str_rec(&*dest, origin->prox);
     }
 }
 
