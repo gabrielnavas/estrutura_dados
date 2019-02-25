@@ -47,6 +47,32 @@ void inserir_listas_vars(pListaVar ** lvm, StrDin * nome, StrDin * valor, int  v
 	}		
 }
 
+void remover_listas_vars_nome_no_return(pListaVar ** lvm, StrDin * nome) //AQUI O NOME (VAR A DELETAR) SEMPRE EXISTE. NUNCA VAI PRECISAR PROCURAR.
+{
+	pListaVar * ante, *atual, *aux_del;
+	
+	ante = NULL;
+	atual = *lvm;
+	
+	while(atual != NULL && !strdin_igual(atual->nome, nome))
+	{
+		ante = atual;
+		atual = atual->prox;
+	}
+	
+	if(ante == NULL)
+	{
+		aux_del = *lvm;
+		*lvm = (*lvm)->prox;
+		free(aux_del);
+	}
+	else
+	{
+		ante->prox = atual->prox;
+		free(atual);
+	}
+}
+
 void change_valor_valor_lista_listas_vars(pListaVar * lvm, int valor)
 {
 	char str[20];
@@ -67,19 +93,13 @@ void change_valor_valor_lista_listas_vars(pListaVar * lvm, int valor)
 
 pListaVar * search_lista_vars_nome_strdin(pListaVar * lvm, StrDin * nome)
 {
-	//char igual;
-	
-	//exibir_str(nome);
 	while(lvm != NULL && !strdin_igual(lvm->nome, nome))
 		lvm = lvm->prox;
-	
-	
 	return lvm;	
 }
 
 pListaVar * search_lista_vars_nome_char(pListaVar * lvm, char * str)
 {
-	//char igual;
 	StrDin * nome_ = NULL;
 	
 	int i=0;
@@ -89,7 +109,6 @@ pListaVar * search_lista_vars_nome_char(pListaVar * lvm, char * str)
 		i++;
 	}	
 	
-	//exibir_str(nome);
 	while(lvm != NULL && !strdin_igual(lvm->nome, nome_))
 		lvm = lvm->prox;
 	
@@ -99,7 +118,6 @@ pListaVar * search_lista_vars_nome_char(pListaVar * lvm, char * str)
 
 pListaVar * search_lista_vars_endereco(pListaVar * lvm, int endereco)
 {	
-	//exibir_str(nome);
 	while(lvm != NULL && lvm->endereco != endereco)
 		lvm = lvm->prox;
 	

@@ -28,6 +28,7 @@ int main()
 	A=2;
 	B=3;
 	C=2;
+	printf("valor de C eh %d e deu certo %s\n",A, "gabriel");
 	int Y,O;
 	executa(&A,&B,&C);
 	printf("Primeiro valor modificado = %d\n",A);

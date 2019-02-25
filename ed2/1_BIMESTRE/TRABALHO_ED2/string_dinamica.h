@@ -70,14 +70,32 @@ int count_str(StrDin * str)
 	return count;
 }
 
-
+//NAO PRINTAR O BARRA ENE -_- 
 void exibir_str(StrDin * str)
-{
+{	
+	char flag_barra_n = 0;
+	
 	while(str != NULL)
 	{
 		//printf("%d", count_str(str));
-		printf("%c", str->ch);
-		str = str->prox;
+		if(str->ch == 92 && str->prox != NULL && str->prox->ch == 'n') //92 = 
+		{
+			printf("\n");
+			if(str->prox != NULL)
+				str = str->prox;
+			flag_barra_n=1;	
+		}
+		else
+		{
+			if(flag_barra_n)
+				str = str->prox;
+			else
+			{
+				printf("%c", str->ch);
+				str = str->prox;
+			}	
+		}
+			
 	}
 }
 

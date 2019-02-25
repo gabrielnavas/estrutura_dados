@@ -67,7 +67,7 @@ void inserir_lista_func_inicio(pListaFunc ** ls, int linha, int cont_linhas, int
 	*ls = novo;
 }
 
-void remover_inicio_func(pListaFunc ** pListaFuncChamadas)
+void remover_inicio_func_no_return(pListaFunc ** pListaFuncChamadas)
 {
 	pListaFunc * aux;
 	
