@@ -52,6 +52,20 @@ void exibir_reverso_rec(StrDin * str)
 	}
 }
 
+char charAt(StrDin * str, int pos, char * out)
+{
+	int i=-1;
+	while(str != NULL && i < pos)
+	{
+		str = str->prox;
+		i++;
+	}
+	
+	if(str != NULL)
+		*out =str->ch;;
+	return 0;	
+}
+
 int count_str_rec(StrDin * str)
 {
 	if(str != NULL)
@@ -154,6 +168,17 @@ void strdin_to_chars(StrDin * str, char * char_str, int *tl)
 	}
 }
 
+
+void strdin_to_chars_no_tl(StrDin * str, char * char_str)
+{
+	int i=0;
+	while(str != NULL)
+	{
+		char_str[i] = str->ch;
+		i++;
+		str=str->prox;
+	}
+}
 
 void copy_str(StrDin ** dest, char * origin)
 {

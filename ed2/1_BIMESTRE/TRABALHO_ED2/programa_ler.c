@@ -18,20 +18,21 @@ void executa(int *p1, int *p2, int *p3)
 {
 	*p1=*p2+*p3;
 	*p2=*p2**p3;
+	printf("%d%d", *p1, *p2);
 	calcula1(&*p3, &*p1,*p2);
 	calcula2(*p2, *p2, &*p2);
 }
 
 int main()
 {
-	int A=3,B=5,C=7;
-	A=2;
+	int VAAR=3,B=5,C=7;
+	VAAR=2;
 	B=3;
 	C=2;
-	printf("valor de C eh %d e deu certo %s\n",A, "gabriel");
+	printf("valor de C eh %d e %d deu certo %s\n",VAAR, 1+2+3,"gabriel");
 	int Y,O;
-	executa(&A,&B,&C);
-	printf("Primeiro valor modificado = %d\n",A);
+	executa(&VAAR,&B,&C);
+	printf("Primeiro valor modificado = %d\n",VAAR);
 	printf("Segundo valor modificado = %d\n",B);
 	printf("Terceiro valor modificado = %d\n",C);
 }

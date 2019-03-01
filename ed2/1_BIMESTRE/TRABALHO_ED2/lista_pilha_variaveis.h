@@ -91,6 +91,8 @@ void change_valor_valor_lista_listas_vars(pListaVar * lvm, int valor)
 	}	
 }
 
+
+
 pListaVar * search_lista_vars_nome_strdin(pListaVar * lvm, StrDin * nome)
 {
 	while(lvm != NULL && !strdin_igual(lvm->nome, nome))

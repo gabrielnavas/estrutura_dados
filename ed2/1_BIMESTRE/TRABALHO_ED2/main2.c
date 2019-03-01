@@ -104,6 +104,37 @@ char eh_variavel(char *string)
 	return 0;	
 }
 
+char eh_variavel_printf(char *string)
+{
+	int i;
+	char variavel=1;
+	if(string[0] >= '0' && string[0] <= '9')
+		variavel=0;
+	else
+	{
+		i=1;
+		while(string[i] != '\0' && variavel)
+		{
+			if(string[i] == '_')
+				i++;
+			else if(string[i] >= '0' && string[i] <= '9')
+				i++;
+			else if(string[i] >= 'A' && string[i] <= 'Z')
+				i++;
+			else if(string[i] >= 'a' && string[i] <= 'z')
+				i++;
+			else 
+				variavel =0;	
+		}
+		
+	}
+	return variavel;	
+}
+
+void int_to_chars(char *chars, int valor)
+{
+	sprintf(chars, "%d", valor);
+}
 
 void get_todas_variaveis_argumento(char *string, pVars_prototipo ** vars_cab, int * pos)
 {
@@ -683,11 +714,11 @@ void inserir_variaveis_prototipo_funcao(char func_chamada[100][100],
 
 char eh_operador_str(char * str)
 {
-	if(strstr(str, "+") ||
-	strstr(str, "-") ||
-	strstr(str, "/") ||
-	strstr(str, "*") ||
-	strstr(str, "%")
+	if(strstr(str, "+") != NULL||
+	strstr(str, "-") != NULL ||
+	strstr(str, "/") != NULL ||
+	strstr(str, "*") != NULL ||
+	strstr(str, "%") != NULL
 	)
 		return 1;
 	
@@ -706,6 +737,7 @@ char eh_operador_char(char str)
 	
 	return 0;	
 }
+
 
 void split_calculo_linha(char * linha_char, char calculo[100][50], int *tl)
 {		
@@ -806,11 +838,16 @@ void split_calculo_linha(char * linha_char, char calculo[100][50], int *tl)
 		
 }
 
+
 int retorna_calculo(char linha_splitada[100][50], pListaVar * pListaVars, int tl)
 {
+	int tl_valor;
+	char valor[50];
+	char calculo[100][50];
+	
 	pListaVar * search_var; 
 	init_listas_vars_main(&search_var);
-	char calculo[100][50];
+	
 	
 	int tl_calc=0, calc;
 	int i=1; //0 eh o nome da val
@@ -823,8 +860,7 @@ int retorna_calculo(char linha_splitada[100][50], pListaVar * pListaVars, int tl
 			if(search_var->ponteiro)	
 				search_var = search_lista_vars_endereco(pListaVars, search_var->valor_endereco);
 			
-			int tl_valor=0;
-			char valor[50];
+			tl_valor=0;
 			strdin_to_chars(search_var->valor, valor, &tl_valor);
 			strcpy(calculo[tl_calc++],valor);
 		}
@@ -846,8 +882,6 @@ int retorna_calculo(char linha_splitada[100][50], pListaVar * pListaVars, int tl
 	//a+b somente uma operacao...
 	while(tl_calc >= 0) //melhor isso mais tarde, colocar mais operacoes
 	{
-		
-		
 		if(strcmp(calculo[tl_calc], "\0") != 0 && strcmp(calculo[tl_calc], "\n") != 0)
 			if(strstr(calculo[tl_calc], "+") != NULL)
 			{
@@ -939,10 +973,6 @@ char executa_linhas_funcao_chamadas(pListaFunc **pListaFuncChamadas,
 		if(linhas->tipo == 0) // calculo
 		{
 			executa_calculo(linha_char, &*pListaVars);
-			//system("cls");
-//			exibir_listas_vars(*pListaVars);
-//			getch();
-			
 			
 		}
 		else if(linhas->tipo == 1) //chamada de funcao
@@ -960,9 +990,7 @@ char executa_linhas_funcao_chamadas(pListaFunc **pListaFuncChamadas,
 //			getch();
 			if(!isEmpty_lista_funcoes(*pListaFuncChamadas))
 				chamou_func=1;
-				
 		} 
-		
 	}
 	
 	return chamou_func;
@@ -986,21 +1014,6 @@ void empilha_funcao(char * linha, pListaVar ** pListaVars, pListaFunc * pListaFu
 
 void split_printf(char *linha, char saida[100][50], int * tl)
 {
-	//const char split[13] = "printf(),;";
-//	char *token = strtok(linha, split);
-//	
-//	while( token != NULL ) {
-//		if(strcmp(token, "\0") != 0 && strcmp(token, "	") != 0)
-//		{
-//			printf("%s\n", token);
-//			strcpy(saida[(*tl)++], token);
-//			(*tl)++;
-//		}	
-//		
-//		token = strtok(NULL, split);
-//	}
-//	//
-//	char printf_linha[100][50];
 	int i=0, j;
 	while(linha[i] != '(')
 		i++;
@@ -1043,10 +1056,148 @@ void split_printf(char *linha, char saida[100][50], int * tl)
 	}		
 }
 
-StrDin * tratar_printf(char saida[100][50], int linhas)
+char eh_number_char(char ch)
 {
-	int linha, pos, pos_aux;
-	StrDin * printf_line;
+	return ch >= '0' && ch <= '9';
+}
+
+char eh_character_char(char ch)
+{
+	return (ch >= 'A' && ch <= 'Z') || ch >= 'a' && ch <= 'z';
+}
+
+void split_calc_printf(char calc[100][50], int * tl, char * string, pListaVar * pListVars)
+{
+	//SPLITA LINHA DE CALCULO DENTRO DE UM ARGUMENTO DE PRINTF
+	int i, i_aux, pont;
+	StrDin * var_argument;
+	pListaVar * search_var;
+	char flag_operador, valor_in_chars[20];
+	
+	flag_operador=0;
+	init_str(&var_argument);
+	i=0;
+	while(string[i] != '\0')
+	{
+		while(string[i] == ' ') i++; // PERCORRER ESPACOS VAZIOS
+		
+		if(eh_number_char(string[i])) //numbero
+		{
+			i_aux=0;
+			while(eh_number_char(string[i]))
+			{
+				calc[*tl][i_aux] = string[i];
+				i++;
+				i_aux++;
+			}
+			
+			flag_operador=1;
+			(*tl)++;
+		}
+		else if(eh_character_char(string[i])) //variavel
+		{
+			i_aux=i; //pega posicao por seguranca para percorrer;
+			while(eh_character_char(string[i_aux]))
+			{
+				inserir_char(&var_argument, string[i_aux]);
+				i_aux++;
+			}
+			
+			search_var = search_lista_vars_nome_strdin(pListVars, var_argument);
+			if(search_var != NULL) //achei na pilha de vars
+			{
+				i=i_aux; //devolve posicao;
+				strdin_to_chars_no_tl(search_var->valor, valor_in_chars); //str to chars
+				strcpy(calc[*tl], valor_in_chars);//coloco na pos calc[tl]
+				(*tl)++;
+				reinit_str(&var_argument);
+				i++;
+			}
+			flag_operador=1;
+		}
+		
+		while(string[i] == ' ') i++; // PERCORRER ESPACOS VAZIOS
+		
+		if(string[i] != '\0')
+			if(eh_operador_char(string[i]) && flag_operador)
+			{
+				calc[*tl][0] = string[i];
+				calc[*tl][1] = '\0';
+				(*tl)++;
+				flag_operador=0;
+				i++;
+			}
+			else
+				i++;		
+	}
+}
+
+
+int executa_calc_printf(char * string, pListaVar * pListaVars)
+{
+	int tl, result;
+	char calc[100][50];
+	
+	tl=0;
+	split_calc_printf(calc, &tl, string, pListaVars);
+	
+		
+	tl--; //coloca tl na pos -1 
+	result = atoi(calc[tl]);
+	tl--; 
+//	printf("%d", atoi(unidade));
+	while(tl > 0)
+	{
+		if(strcmp(calc[tl], "\0") != 0 && strcmp(calc[tl], "\n") != 0)
+			if(strstr(calc[tl], "+") != NULL)
+			{
+				tl--;
+				result += atoi(calc[tl]);
+			}
+				
+				
+			else if(strstr(calc[tl], "-") != NULL)
+			{
+				tl--;
+				result -= atoi(calc[tl]);
+			}
+				
+			
+			else if(strstr(calc[tl], "/") != NULL)
+			{
+				tl--;
+				result /= atoi(calc[tl]);
+			}
+				
+			
+			else if(strstr(calc[tl], "%") != NULL)
+			{
+				tl--;
+				result %= atoi(calc[tl]);
+			}
+				
+			
+			else if(strstr(calc[tl], "*") != NULL) //*
+			{
+				tl--;
+				result *= atoi(calc[tl]);		
+			}
+		else			
+			tl--;	
+	}	
+	
+	return result;
+}
+
+StrDin * tratar_printf(char saida[100][50], int linhas, pListaVar * pListaVars)
+{
+	int linha, pos, pos_aux, result_calculo_argument;
+	char ch, valor_calc_chars[20];
+	pListaVar * busca_var;
+	StrDin * printf_line; //USANDO EM CADA LINHA DA LISTA
+	StrDin * var_aux; //USADO PARA PEGAR PESQUISAR O VALOR DA VARIAVEL
+	
+	init_str(&var_aux);
 	init_str(&printf_line);
 	
 	pos=0;
@@ -1083,8 +1234,6 @@ StrDin * tratar_printf(char saida[100][50], int linhas)
 					
 			}
 			
-//			else if(eh_calculo(linha)) //ARRUMAR ISSO PRA QUANDO TIVER PONTEIRO// *PROBLEMA
-			
 			else if(is_number(saida[linha])) //NUMERO SEM OPERADOR
 			{
 				pos_aux = 0;
@@ -1095,15 +1244,39 @@ StrDin * tratar_printf(char saida[100][50], int linhas)
 				}
 			}
 			
-			else// VARIAVEL
+			else if(eh_variavel_printf(saida[linha]))// VARIAVEL
 			{
 				pos_aux=0;
 				while(saida[linha][pos_aux] == '*' || saida[linha][pos_aux] == '&')
 					pos_aux++;
 				
-				while(saida[linha][pos_aux] != '\0')
+				while(saida[linha][pos_aux] != ' ' && saida[linha][pos_aux] != '\0')
 				{
-					inserir_char(&printf_line, saida[linha][pos_aux]);
+					inserir_char(&var_aux, saida[linha][pos_aux]);
+					pos_aux++;	
+				}	
+				
+				busca_var = search_lista_vars_nome_strdin(pListaVars, var_aux);	
+				reinit_str(&var_aux);
+				
+				var_aux = busca_var->valor;
+				while(var_aux != NULL)
+				{
+					inserir_char(&printf_line, var_aux->ch);
+					var_aux = var_aux->prox;
+				}	
+			}
+			
+			else //CALCULO
+			{
+				pos_aux=0;
+				
+				result_calculo_argument = executa_calc_printf(saida[linha], pListaVars);
+				int_to_chars(valor_calc_chars, result_calculo_argument);
+				
+				while(valor_calc_chars[pos_aux] != '\0')
+				{
+					inserir_char(&printf_line, valor_calc_chars[pos_aux]);
 					pos_aux++;
 				}	
 			}
@@ -1116,7 +1289,7 @@ StrDin * tratar_printf(char saida[100][50], int linhas)
 	return printf_line;
 }
 
-void guardar_printf(char * string, pListaString ** pListaPrintfs)
+void guardar_printf(char * string, pListaString ** pListaPrintfs, pListaVar * pListaVars)
 {
 	StrDin * printf_add;
 	char saida[100][50];
@@ -1124,9 +1297,9 @@ void guardar_printf(char * string, pListaString ** pListaPrintfs)
 	
 	linhas_saida=0;
 	split_printf(string, saida, &linhas_saida);
-	printf_add = tratar_printf(saida, linhas_saida);
+	printf_add = tratar_printf(saida, linhas_saida, pListaVars);
 	
-	exibir_str(printf_add);
+//	exibir_str(printf_add);
 	inserir_lista_string_strdin(&*pListaPrintfs, printf_add);
 }
 
@@ -1184,7 +1357,10 @@ void executa_pilha_chamadas_funcoes(pListaFunc * pListaFuncoes, pListaFunc ** pL
 		} 
 		else if(linhas->tipo == 2) //printf
 		{
-			guardar_printf(linha_char, &*pListaPrintfs);
+			(*pListaFuncChamadas)->linha++;
+			printar_arquivo_tela_pos_atual(nome_programa_fonte, (*pListaFuncChamadas)->linha);
+			remover_inicio_linhas_interna_func_no_return(&(*pListaFuncChamadas)->pListaLinhas_func);
+			guardar_printf(linha_char, &*pListaPrintfs, *pListaVars);
 		}
 		
 		//REMOVER A FUNCAO DA LISTA DE FUNCOES DE CHAMADAS E VARIAVEIS DA LISTA DE VARIAVEIS
@@ -1212,8 +1388,6 @@ void executa_pilha_chamadas_funcoes(pListaFunc * pListaFuncoes, pListaFunc ** pL
 		}
 	}
 }
-
-
 
 int main()
 {
@@ -1312,7 +1486,7 @@ int main()
 					
 					else if(eh_printf(linha))
 					{
-						guardar_printf(linha, &pListaPrintfs);
+						guardar_printf(linha, &pListaPrintfs, pListaVars);
 						printar_arquivo_tela_pos_atual(nome_programa_fonte, pos_main_exibir); //printar na tela posicao atual do main
 						pos_main_exibir++;
 					}
