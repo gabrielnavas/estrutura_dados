@@ -1,7 +1,7 @@
 // -------------------------------------------- lista chamadas e calculos funcao --------------------
 struct lista_interna_func
 {
-	int tipo; //0 calculo - 1 chamada de funcao - 2 printf;
+	int tipo; //0 calculo - 1 chamada de funcao - 2 printf - 3 declaracao variavel;
 	StrDin * linha;
 	
 	struct lista_interna_func * prox;	

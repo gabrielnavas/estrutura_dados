@@ -17,7 +17,7 @@ void init_listas_vars_main(pListaVar ** lvm)
 	*lvm = NULL;
 }
 
-void inserir_listas_vars(pListaVar ** lvm, StrDin * nome, StrDin * valor, int  valor_endereco, char ponteiro)
+void inserir_listas_vars_fim(pListaVar ** lvm, StrDin * nome, StrDin * valor, int  valor_endereco, char ponteiro)
 {
 	pListaVar * novo, *aux;
 	
@@ -47,14 +47,90 @@ void inserir_listas_vars(pListaVar ** lvm, StrDin * nome, StrDin * valor, int  v
 	}		
 }
 
-void remover_listas_vars_nome_no_return(pListaVar ** lvm, StrDin * nome) //AQUI O NOME (VAR A DELETAR) SEMPRE EXISTE. NUNCA VAI PRECISAR PROCURAR.
+void inserir_listas_vars_inicio(pListaVar ** lvm, StrDin * nome, StrDin * valor, int  valor_endereco, char ponteiro)
 {
+	pListaVar * novo;
+	
+	novo = (pListaVar*) malloc(sizeof(pListaVar));
+	
+	novo->nome = nome;
+	novo->valor = valor;
+	novo->valor_endereco = valor_endereco;
+	novo->ponteiro = ponteiro;
+	novo->prox = NULL;
+	
+	
+	if(*lvm == NULL)
+	{
+		novo->endereco = 100;
+		*lvm = novo;
+	}
+		
+	else
+	{
+		novo->endereco = (*lvm)->endereco + 4;	
+
+		novo->prox = *lvm;
+		*lvm = novo;		
+		
+	}		
+}
+
+void reinit_listas_vars(pListaVar ** lvm)
+{
+		//int endereco;
+//	StrDin * nome;
+//	StrDin * valor;
+//	int valor_endereco;
+//	char ponteiro;
+	pListaVar * aux;
+	if(*lvm != NULL)
+	{		
+		reinit_str(&(*lvm)->nome);
+		reinit_str(&(*lvm)->valor);
+		aux = *lvm;
+		*lvm = (*lvm)->prox;
+		free(aux);
+		reinit_listas_vars(&*lvm);
+	}
+}
+
+void remover_listas_vars_nome_no_return(pListaVar ** lvm, StrDin * nome) 
+{
+	//AQUI O NOME (VAR A DELETAR) SEMPRE EXISTE. NUNCA VAI PRECISAR PROCURAR.
 	pListaVar * ante, *atual, *aux_del;
 	
 	ante = NULL;
 	atual = *lvm;
 	
 	while(atual != NULL && !strdin_igual(atual->nome, nome))
+	{
+		ante = atual;
+		atual = atual->prox;
+	}
+	
+	if(ante == NULL)
+	{
+		aux_del = *lvm;
+		*lvm = (*lvm)->prox;
+		free(aux_del);
+	}
+	else
+	{
+		ante->prox = atual->prox;
+		free(atual);
+	}
+}
+
+void remover_listas_vars_endereco_no_return(pListaVar ** lvm, int endereco) 
+{
+	//AQUI O NOME (VAR A DELETAR) SEMPRE EXISTE. NUNCA VAI PRECISAR PROCURAR.
+	pListaVar * ante, *atual, *aux_del;
+	
+	ante = NULL;
+	atual = *lvm;
+	
+	while(atual != NULL && atual->endereco != endereco)
 	{
 		ante = atual;
 		atual = atual->prox;

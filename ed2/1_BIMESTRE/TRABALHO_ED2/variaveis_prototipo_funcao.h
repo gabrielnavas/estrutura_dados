@@ -5,6 +5,7 @@ struct lista_vars_prototipo_func
 	StrDin * nome;
 	char pont;
 	StrDin * valor;
+	int endereco;
 	
 	struct  lista_vars_prototipo_func * prox;
 };
@@ -15,7 +16,7 @@ void init_lista_vars_argumento_func(pVars_prototipo ** vc)
 	*vc = NULL;
 }
 
-void inserir_lista_vars_argumento_func(pVars_prototipo ** vc, int tipo, char pont, StrDin * nome, StrDin * valor)
+void inserir_lista_vars_argumento_func(pVars_prototipo ** vc, int endereco, int tipo, char pont, StrDin * nome, StrDin * valor)
 {
 	pVars_prototipo * novo, *aux;
 	
@@ -24,6 +25,7 @@ void inserir_lista_vars_argumento_func(pVars_prototipo ** vc, int tipo, char pon
 	novo->nome = nome;
 	novo->pont = pont; //ponteiro?
 	novo->valor =valor;
+	novo->endereco = endereco;
 	novo->prox = NULL;
 	
 	if(*vc == NULL)
@@ -58,17 +60,20 @@ void copy_lista_vars_prototipo_all(pVars_prototipo **destino, pVars_prototipo * 
 {
 	StrDin * nome;
 	StrDin * valor;
+	int endereco;
 	
 	//destino inicido la fora
 	while(origin != NULL)
 	{
+		endereco = origin->endereco;
+		
 		init_str(&nome);
 		copy_str_rec(&nome, origin->nome);
 		
 		init_str(&valor);
 		copy_str_rec(&valor, origin->valor);
 		
-		inserir_lista_vars_argumento_func(&*destino, origin->tipo, origin->pont , nome, valor);
+		inserir_lista_vars_argumento_func(&*destino, endereco, origin->tipo, origin->pont , nome, valor);
 		
 		origin = origin->prox;
 	}

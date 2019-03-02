@@ -7,8 +7,9 @@
 #include "variaveis_prototipo_funcao.h"
 #include "chamadas_calculos_funcao.h"
 
-#include "lista_funcoes.h" // para guardar lista de declaracoes de funcoes e funcoes de chamada;
+
 #include "lista_pilha_variaveis.h" //para guardar lista de variaveis
+#include "lista_funcoes.h" // para guardar lista de declaracoes de funcoes e funcoes de chamada;
 #include "lista_string.h" //para guardar printf's
 
 
@@ -58,7 +59,12 @@ char eh_main(char *string)
 
 char eh_calculo_in_funcao(char *string)
 {
-	if(strstr(string, "=") != NULL && strstr(string, ";") != NULL)
+	if(strstr(string, "=") != NULL && 
+		strstr(string, ";") != NULL && 
+		strstr(string, "char") == NULL &&
+		strstr(string, "int") == NULL  &&
+		strstr(string, "float") == NULL &&
+		strstr(string, "double") == NULL)
 		return 1;
 	return 0;	
 }
@@ -216,7 +222,7 @@ void get_todas_variaveis_argumento(char *string, pVars_prototipo ** vars_cab, in
 		
 		if(string[*pos] == ',' || string[*pos] == ')')
 		{
-			inserir_lista_vars_argumento_func(&*vars_cab, tipo, pont, nome, valor);
+			inserir_lista_vars_argumento_func(&*vars_cab, 0, tipo, pont, nome, valor);
 //			printf("\n\n%d %c\n", *pos, string[*pos]);
 			if(string[*pos] == ',')
 				(*pos)++;
@@ -349,7 +355,9 @@ void ler_funcao(pListaFunc ** pLista_Funcoes, char * line_read, /*int * pos_line
 			
 		else if(eh_printf(line_read))
 			inserir_lista_linhas_interna_func(&pLinhas_interna, 2, vetchar_to_strDin(line_read));
-				
+			
+		else if(eh_declaracao_variavel_atribuicao(line_read))	
+			inserir_lista_linhas_interna_func(&pLinhas_interna, 3, vetchar_to_strDin(line_read));
 		
 		fgets(line_read, 100, arq);
 		(*linha_atual)++;
@@ -365,7 +373,7 @@ void ler_funcao(pListaFunc ** pLista_Funcoes, char * line_read, /*int * pos_line
 	}
 	
 	//insere na lista de funcoes;
-	inserir_lista_func_fim(&*pLista_Funcoes, linha_inicio_funcao_implementacoes, cont_linhas, pTipo_func, pNome_func, pVars_argumentos, pLinhas_interna);
+	inserir_lista_func_fim(&*pLista_Funcoes, linha_inicio_funcao_implementacoes, cont_linhas, pTipo_func, pNome_func, pVars_argumentos, pLinhas_interna, NULL);
 }
 
 
@@ -547,8 +555,9 @@ void inserir_variaveis_declaracao_dentro_funcao(pListaVar ** pListaVars, char st
 	//ADD VARIAVEIS
 	StrDin * nome;
 	StrDin * valor;
-	int i, i_linha;
+	int endereco;
 	char ponteiro;
+	int i, i_linha;
 	
 	init_str(&nome);
 	init_str(&valor);
@@ -556,6 +565,7 @@ void inserir_variaveis_declaracao_dentro_funcao(pListaVar ** pListaVars, char st
 	
 	
 	//exibir_listas_vars(*pListaVars);
+	
 	
 	i=0;
 	while(i < tl)
@@ -595,7 +605,7 @@ void inserir_variaveis_declaracao_dentro_funcao(pListaVar ** pListaVars, char st
 		//INSERIR NA PILHA DE VARS
 		pListaVar * search_nome = search_lista_vars_nome_strdin(*pListaVars, nome); 
 		if(search_nome == NULL)
-			inserir_listas_vars(&*pListaVars, nome, valor, 0, ponteiro); 
+			inserir_listas_vars_inicio(&*pListaVars, nome, valor, 0, ponteiro); 
 		else
 		{
 			//exibir_str(search_nome->nome);
@@ -636,7 +646,6 @@ pListaFunc * empilha_chamada_funcao(char func_chamada[100][100], pListaFunc *pLi
 	init_lista_func(&copia_funcao_search);
 	
 	
-//	printf("\n%s", func_chamada[0]);
 	//busca funcao com o nome da chamada
 	search_func = buscar_lista_funcao_nome_chars(pListaFuncoes, func_chamada[0]/*0=nome*/);
 	
@@ -652,7 +661,8 @@ pListaFunc * empilha_chamada_funcao(char func_chamada[100][100], pListaFunc *pLi
 		copia_funcao_search->tipo, 
 		copia_funcao_search->nome, 
 		copia_funcao_search->pListaVars_prototipo,
-		copia_funcao_search->pListaLinhas_func
+		copia_funcao_search->pListaLinhas_func,
+		copia_funcao_search->pListaVarsInterna
 	);
 	
 	return copia_funcao_search;	
@@ -668,12 +678,15 @@ void inserir_variaveis_prototipo_funcao(char func_chamada[100][100],
 	//ADD VARIAVEIS
 	StrDin * nome;
 	StrDin * valor;
+	int endereco;
 	int valor_endereco;
 	pListaVar * var_pilha;
 	char ponteiro;
-	int pos_var, endereco;
+	int pos_var;
+	pVars_prototipo * variaveis_funcao;
 	
-	pVars_prototipo * variaveis_funcao = pFuncao_chamada->pListaVars_prototipo; //VARIAVEIS DE PROTOTIPO
+	endereco = (*pListaVars)->endereco; //PEGA ENDERECO DO TOPO DA LISTA DE VARIAVEIS
+	variaveis_funcao = pFuncao_chamada->pListaVars_prototipo; //VARIAVEIS DE PROTOTIPO
 	pos_var=1; //1, pois 0 eh o nome da funcao
 	while(variaveis_funcao != NULL)
 	{
@@ -694,7 +707,7 @@ void inserir_variaveis_prototipo_funcao(char func_chamada[100][100],
 				var_pilha = search_lista_vars_endereco(*pListaVars, var_pilha->valor_endereco);
 				
 			valor_endereco = var_pilha->endereco; //PEGO VALOR
-			exibir_str(var_pilha->valor);
+//			exibir_str(var_pilha->valor);
 			copy_str_rec(&valor, var_pilha->valor);
 			ponteiro=1;
 		}
@@ -704,8 +717,14 @@ void inserir_variaveis_prototipo_funcao(char func_chamada[100][100],
 			copy_str_rec(&valor, var_pilha->valor);
 			valor_endereco = 0;
 		}	
-			
-		inserir_listas_vars(&*pListaVars, nome, valor, valor_endereco, ponteiro);
+		
+		//COLOCA ENDERECO NA VARIAVEL DE PROTOTIPO COM O MESMO ENDERECO DA PILHA DE ENDERECO
+		endereco += 4; //+4 assim como no inser_lista_vars
+		variaveis_funcao->endereco = endereco; 
+		
+		
+		//INSERIR VARIAVEL NA PILHA DE EXECUCAO
+		inserir_listas_vars_inicio(&*pListaVars, nome, valor, valor_endereco, ponteiro);
 		
 		pos_var++;
 		variaveis_funcao = variaveis_funcao->prox;
@@ -1006,9 +1025,31 @@ void empilha_funcao(char * linha, pListaVar ** pListaVars, pListaFunc * pListaFu
 	pListaFunc * copia_da_funcao_achada;
 	
 	split_chamada_funcao(linha, saida, &tl); //splita prototipo da funcao
-	copia_da_funcao_achada =  empilha_chamada_funcao(saida, pListaFuncoes, &*pListaFuncChamadas); //copia a funcao para lista de funcoes de chamada
+	copia_da_funcao_achada = empilha_chamada_funcao(saida, pListaFuncoes, &*pListaFuncChamadas); //copia a funcao para lista de funcoes de chamada
 	
 	inserir_variaveis_prototipo_funcao(saida, &*pListaVars, copia_da_funcao_achada);//inserir funcao na lista de funcoes
+	
+//////	//PRINTAR A LISTA DE VARIAVEIS DO TOPO DA LISTA DE FUNCOES DE CHAMADA
+//////			
+//////	pVars_prototipo * aux_varChamadas = (*pListaFuncChamadas)->pListaVars_prototipo;
+//////	printf("\n\nENDERECO\tTIPO\tPONT\tNOME\tVALOR\n");
+//////	while(aux_varChamadas != NULL)
+//////	{
+//////		//int tipo; // 0 void - 1 int - 2 float - 3 char - 4 double
+////////				StrDin * nome;
+////////				char pont;
+////////				StrDin * valor;
+////////				int endereco;
+
+//////		printf("%d", aux_varChamadas->endereco);
+//////		printf("%d", aux_varChamadas->tipo);
+//////		printf("%s", (aux_varChamadas->pont) ? "* ": " ");
+//////		exibir_str(aux_varChamadas->nome);
+//////		exibir_str(aux_varChamadas->valor);
+//////		printf("\n");
+//////		
+//////		aux_varChamadas = aux_varChamadas->prox;
+//////	}
 	
 }
 
@@ -1034,7 +1075,7 @@ void split_printf(char *linha, char saida[100][50], int * tl)
 	i++; // "
 	(*tl)++; //peguei primeiro argumento printf
 	
-	printf("%s", saida[0]);
+//	printf("%s", saida[0]);
 	
 	while(linha[i] != ')')
 	{
@@ -1043,16 +1084,19 @@ void split_printf(char *linha, char saida[100][50], int * tl)
 		j=0;	
 		while(linha[i] != ',' && linha[i] != ')')
 		{
-			saida[*tl][j] = linha[i];
-			i++;
-			j++;
+			if(linha[i] != ' ')
+			{
+				saida[*tl][j] = linha[i];
+				i++;
+				j++;
+			}
 		}
 			
-		printf("%s", saida[*tl]);	
+//		printf("%s", saida[*tl]);	
 		(*tl)++;
 		
-	while(linha[i] == ' ' && linha[i] != ')' )
-		i++;
+		while(linha[i] == ' ' && linha[i] != ')' )
+			i++;
 	}		
 }
 
@@ -1081,7 +1125,7 @@ void split_calc_printf(char calc[100][50], int * tl, char * string, pListaVar * 
 	{
 		while(string[i] == ' ') i++; // PERCORRER ESPACOS VAZIOS
 		
-		if(eh_number_char(string[i])) //numbero
+		if(eh_number_char(string[i])) //numero
 		{
 			i_aux=0;
 			while(eh_number_char(string[i]))
@@ -1096,17 +1140,19 @@ void split_calc_printf(char calc[100][50], int * tl, char * string, pListaVar * 
 		}
 		else if(eh_character_char(string[i])) //variavel
 		{
+			//PRIMEIRA ENTRADA NAO PODE SER NUMERO, POS ISSO NO IF VERIFICO SOMENTE LETRA
 			i_aux=i; //pega posicao por seguranca para percorrer;
-			while(eh_character_char(string[i_aux]))
+			
+			do 
 			{
 				inserir_char(&var_argument, string[i_aux]);
 				i_aux++;
-			}
+			}while(eh_character_char(string[i_aux]) || eh_number_char(string[i_aux]) || string[i_aux] == '_');
 			
 			search_var = search_lista_vars_nome_strdin(pListVars, var_argument);
 			if(search_var != NULL) //achei na pilha de vars
 			{
-				i=i_aux; //devolve posicao;
+				i=i_aux-1; //devolve posicao;
 				strdin_to_chars_no_tl(search_var->valor, valor_in_chars); //str to chars
 				strcpy(calc[*tl], valor_in_chars);//coloco na pos calc[tl]
 				(*tl)++;
@@ -1128,10 +1174,10 @@ void split_calc_printf(char calc[100][50], int * tl, char * string, pListaVar * 
 				i++;
 			}
 			else
-				i++;		
+				i++;			
+			
 	}
 }
-
 
 int executa_calc_printf(char * string, pListaVar * pListaVars)
 {
@@ -1141,7 +1187,6 @@ int executa_calc_printf(char * string, pListaVar * pListaVars)
 	tl=0;
 	split_calc_printf(calc, &tl, string, pListaVars);
 	
-		
 	tl--; //coloca tl na pos -1 
 	result = atoi(calc[tl]);
 	tl--; 
@@ -1189,9 +1234,12 @@ int executa_calc_printf(char * string, pListaVar * pListaVars)
 	return result;
 }
 
-StrDin * tratar_printf(char saida[100][50], int linhas, pListaVar * pListaVars)
+StrDin * tratar_argumentos_printf(char saida[100][50], int argumentos, pListaVar * pListaVars)
 {
-	int linha, pos, pos_aux, result_calculo_argument;
+	/*
+		TRATA TODOS ARGUMENTOS DO PRINTF
+	*/
+	int argumento, pos, pos_aux, result_calculo_argument, tl_string_1_argument_printf;
 	char ch, valor_calc_chars[20];
 	pListaVar * busca_var;
 	StrDin * printf_line; //USANDO EM CADA LINHA DA LISTA
@@ -1200,59 +1248,67 @@ StrDin * tratar_printf(char saida[100][50], int linhas, pListaVar * pListaVars)
 	init_str(&var_aux);
 	init_str(&printf_line);
 	
+
 	pos=0;
-	linha=1; //linha 0 eh posicao da string do printf("blablabla"); linha 1 em diante é as chamadas de variavel
-	while(saida[0][pos] != '\0')
+	argumento=1; //linha 0 eh posicao da string do printf("blablabla"); linha 1 em diante é as chamadas de variavel
+	while(argumento < argumentos)
 	{
 		//VE SE EH OPERADOR DO PRINTF INTERNO INTEIRO, FLOAT, STRING...etc
 		do
 		{
-			inserir_char(&printf_line, saida[0][pos]);
-			pos++;
+			if(saida[0][pos] != '%' && ( saida[0][pos+1] != 'd'  || saida[0][pos+1] != 'f'  ||
+																    saida[0][pos+1]  != 's' ||
+															    	saida[0][pos+1]  != 'c' )
+			)
+			{
+				inserir_char(&printf_line, saida[0][pos]);
+				pos++;
+			}
+			
 		}while(saida[0][pos] != '\0' && saida[0][pos] != '%' && ( saida[0][pos+1] != 'd'  || 
 																  saida[0][pos+1] != 'f'  ||
 																  saida[0][pos+1]  != 's' ||
 																  saida[0][pos+1]  != 'c' ));
 		
-		if(pos < strlen(saida[0]) && linha < linhas)
+		if(/*pos < tl_string_1_argument_printf && */argumento < argumentos)
 		{
 			pos = pos+2; //pula %d ou %s ou %f	
 			
-			if(saida[linha][0] == '"') //STRING
+			if(saida[argumento][0] == '"') //STRING
 			{
 				pos_aux = 1;
-				while(saida[linha][pos_aux] != '"' && saida[linha][pos_aux] != '\0')
+				while(saida[argumento][pos_aux] != '"' && saida[argumento][pos_aux] != '\0')
 				{
-					inserir_char(&printf_line, saida[linha][pos_aux]);
+					inserir_char(&printf_line, saida[argumento][pos_aux]);
 					pos_aux++;
 				}
 			}
-			else if(saida[linha][0] == 39) // ' -> unico char ' = aspas
+			else if(saida[argumento][0] == 39) // ' -> unico char ' = aspas
 			{
 				pos_aux = 1;
-				inserir_char(&printf_line, saida[linha][pos_aux]);
+				inserir_char(&printf_line, saida[argumento][pos_aux]);
 					
 			}
 			
-			else if(is_number(saida[linha])) //NUMERO SEM OPERADOR
+			else if(is_number(saida[argumento])) //NUMERO SEM OPERADOR
 			{
 				pos_aux = 0;
-				while(saida[linha][pos_aux] != '\0')
+				while(saida[argumento][pos_aux] != '\0')
 				{
-					inserir_char(&printf_line, saida[linha][pos_aux]);
+					inserir_char(&printf_line, saida[argumento][pos_aux]);
 					pos_aux++;
 				}
 			}
 			
-			else if(eh_variavel_printf(saida[linha]))// VARIAVEL
+			else if(eh_variavel_printf(saida[argumento]))// VARIAVEL
 			{
 				pos_aux=0;
-				while(saida[linha][pos_aux] == '*' || saida[linha][pos_aux] == '&')
+				while(saida[argumento][pos_aux] == '*' || saida[argumento][pos_aux] == '&')
 					pos_aux++;
 				
-				while(saida[linha][pos_aux] != ' ' && saida[linha][pos_aux] != '\0')
+				while(saida[argumento][pos_aux] != ' ' && saida[argumento][pos_aux] != '\0')
 				{
-					inserir_char(&var_aux, saida[linha][pos_aux]);
+					inserir_char(&var_aux, saida[argumento][pos_aux]);
 					pos_aux++;	
 				}	
 				
@@ -1271,7 +1327,7 @@ StrDin * tratar_printf(char saida[100][50], int linhas, pListaVar * pListaVars)
 			{
 				pos_aux=0;
 				
-				result_calculo_argument = executa_calc_printf(saida[linha], pListaVars);
+				result_calculo_argument = executa_calc_printf(saida[argumento], pListaVars);
 				int_to_chars(valor_calc_chars, result_calculo_argument);
 				
 				while(valor_calc_chars[pos_aux] != '\0')
@@ -1280,10 +1336,15 @@ StrDin * tratar_printf(char saida[100][50], int linhas, pListaVar * pListaVars)
 					pos_aux++;
 				}	
 			}
-			linha++;
+			
+			argumento++;
 		}
-		
-		
+	}
+	
+	while(saida[0][pos] != '\0') //CASO SO TENHA PRINTF OU OS ARGUMENTOS ACABARAM
+	{
+		inserir_char(&printf_line, saida[0][pos]);
+		pos++;
 	}
 	
 	return printf_line;
@@ -1297,7 +1358,7 @@ void guardar_printf(char * string, pListaString ** pListaPrintfs, pListaVar * pL
 	
 	linhas_saida=0;
 	split_printf(string, saida, &linhas_saida);
-	printf_add = tratar_printf(saida, linhas_saida, pListaVars);
+	printf_add = tratar_argumentos_printf(saida, linhas_saida, pListaVars);
 	
 //	exibir_str(printf_add);
 	inserir_lista_string_strdin(&*pListaPrintfs, printf_add);
@@ -1305,13 +1366,43 @@ void guardar_printf(char * string, pListaString ** pListaPrintfs, pListaVar * pL
 
 void remover_variaveis_pilha_variaveis(pListaVar ** pListaVars, pListaFunc * pListaFuncChamadas)
 {
-	pVars_prototipo * variaveis = pListaFuncChamadas->pListaVars_prototipo;
+	pVars_prototipo * variaveis_prototipo;
+	pListaVar * vars_interna;
 	
-	while(variaveis != NULL)
+	variaveis_prototipo = pListaFuncChamadas->pListaVars_prototipo;
+	while(variaveis_prototipo != NULL)
 	{
-		remover_listas_vars_nome_no_return(&*pListaVars, variaveis->nome);
-		variaveis = variaveis->prox;
+		remover_listas_vars_endereco_no_return(&*pListaVars, variaveis_prototipo->endereco);
+		variaveis_prototipo = variaveis_prototipo->prox;
 	}
+	
+	vars_interna = pListaFuncChamadas->pListaVarsInterna;
+	while(vars_interna != NULL)
+	{
+		remover_listas_vars_endereco_no_return(&*pListaVars, variaveis_prototipo->endereco);
+		vars_interna = vars_interna->prox;
+	}
+}
+
+void inserir_variaveis_interna_pilha_vars(char linha[100], pListaVar ** pListaVars)
+{
+	char saida[100][100];
+	int tl;
+	
+	tl=0;
+	split_variaveis_atribuicoes(linha, saida, &tl); //splita linha lida do arquivo
+	inserir_variaveis_declaracao_dentro_funcao(&*pListaVars, saida, tl);//inserir variaveis na lista de variaveis
+}
+
+void incrementa_linha_funcao(pListaFunc ** pListaFuncChamadas)
+{
+	if((*pListaFuncChamadas)->cont_execucao == 0)
+		(*pListaFuncChamadas)->cont_execucao++;
+	else
+	{
+		(*pListaFuncChamadas)->linha++;
+		(*pListaFuncChamadas)->cont_linhas++;
+	}	
 }
 
 void executa_pilha_chamadas_funcoes(pListaFunc * pListaFuncoes, pListaFunc ** pListaFuncChamadas, 
@@ -1323,7 +1414,7 @@ void executa_pilha_chamadas_funcoes(pListaFunc * pListaFuncoes, pListaFunc ** pL
 	int tipo, tl;
 	
 	pLinhas_func * linhas = (*pListaFuncChamadas)->pListaLinhas_func; // CABECA DA LISTA DAS LINHAS DA FUNCAO
-	exibir_str(linhas->linha);
+//	exibir_str(linhas->linha);
 	
 	if( !isEmpty_lista_linhas_interna_func(linhas))
 	{
@@ -1334,57 +1425,51 @@ void executa_pilha_chamadas_funcoes(pListaFunc * pListaFuncoes, pListaFunc ** pL
 		{
 			executa_calculo(linha_char, &*pListaVars);
 			
-			if((*pListaFuncChamadas)->cont_execucao == 0)
-			{
-				printar_arquivo_tela_pos_atual(nome_programa_fonte, (*pListaFuncChamadas)->linha);
-				(*pListaFuncChamadas)->cont_execucao++;
-			}
-			else
-			{
-				(*pListaFuncChamadas)->linha++;
-				printar_arquivo_tela_pos_atual(nome_programa_fonte, (*pListaFuncChamadas)->linha);
-			}
+			incrementa_linha_funcao(&*pListaFuncChamadas); //++ LINHA
+			
+			printar_arquivo_tela_pos_atual(nome_programa_fonte, (*pListaFuncChamadas)->linha);
 			remover_inicio_linhas_interna_func_no_return(&(*pListaFuncChamadas)->pListaLinhas_func);
 		}
 		else if(linhas->tipo == 1) //chamada de funcao
 		{
-			(*pListaFuncChamadas)->linha++;
+			incrementa_linha_funcao(&*pListaFuncChamadas); //++ LINHA
 			printar_arquivo_tela_pos_atual(nome_programa_fonte, (*pListaFuncChamadas)->linha);
 			remover_inicio_linhas_interna_func_no_return(&(*pListaFuncChamadas)->pListaLinhas_func);
 			
 			empilha_funcao(linha_char, &*pListaVars, pListaFuncoes, &*pListaFuncChamadas);
-				
+			
+			
 		} 
 		else if(linhas->tipo == 2) //printf
 		{
-			(*pListaFuncChamadas)->linha++;
+			incrementa_linha_funcao(&*pListaFuncChamadas); //++ LINHA
 			printar_arquivo_tela_pos_atual(nome_programa_fonte, (*pListaFuncChamadas)->linha);
 			remover_inicio_linhas_interna_func_no_return(&(*pListaFuncChamadas)->pListaLinhas_func);
+			
 			guardar_printf(linha_char, &*pListaPrintfs, *pListaVars);
+		}
+		else if(linhas->tipo == 3) //declaracao de variaveis
+		{
+			printar_arquivo_tela_pos_atual(nome_programa_fonte, (*pListaFuncChamadas)->linha);
+			remover_inicio_linhas_interna_func_no_return(&(*pListaFuncChamadas)->pListaLinhas_func);
+			incrementa_linha_funcao(&*pListaFuncChamadas); //++ LINHA
+			
+			inserir_variaveis_interna_pilha_vars(linha_char, &*pListaVars);
 		}
 		
 		//REMOVER A FUNCAO DA LISTA DE FUNCOES DE CHAMADAS E VARIAVEIS DA LISTA DE VARIAVEIS
-		if(isEmpty_lista_linhas_interna_func((*pListaFuncChamadas)->pListaLinhas_func)) //SE FUNCAO LISTA DE LINHAS VAZIA
+		//SE FUNCAO LISTA DE LINHAS VAZIA
+		if(isEmpty_lista_linhas_interna_func((*pListaFuncChamadas)->pListaLinhas_func)) 
 		{
 			do
 			{
-				//REMOVE AS VARIAVEIS DA FUNCAO DA PILHA DE VARIAVEIS GLOBAIS;
+				//REMOVE AS VARIAVEIS DE ARGUMENTO DA FUNCAO DA PILHA DE VARIAVEIS GLOBAIS;
 				remover_variaveis_pilha_variaveis(&*pListaVars, *pListaFuncChamadas);
 				
 				//REMOVE TOPO DA PILHA DE FUNCOES DE CHAMADA;
 				remover_inicio_func_no_return(&*pListaFuncChamadas);
 			}while( !isEmpty_lista_funcoes(*pListaFuncChamadas) && isEmpty_lista_linhas_interna_func((*pListaFuncChamadas)->pListaLinhas_func));
 				
-		}
-			
-			
-		//SOMENTE PARA PRINTAR, RETIRAR DEPOIS	
-		if(!isEmpty_lista_funcoes(*pListaFuncChamadas))
-		{
-			exibir_str((*pListaFuncChamadas)->nome); 
-			if(!isEmpty_lista_linhas_interna_func((*pListaFuncChamadas)->pListaLinhas_func))
-				exibir_str((*pListaFuncChamadas)->pListaLinhas_func->linha); 
-			printf("LINHA %d: " ,(*pListaFuncChamadas)->linha);
 		}
 	}
 }
@@ -1469,7 +1554,6 @@ int main()
 						tl=0;
 						split_variaveis_atribuicoes(linha, saida, &tl); //splita linha lida do arquivo
 						inserir_variaveis_declaracao_dentro_funcao(&pListaVars, saida, tl);//inserir variaveis na lista de variaveis
-								
 												
 						printar_arquivo_tela_pos_atual(nome_programa_fonte, pos_main_exibir); //printar na tela posicao atual do main
 						pos_main_exibir++;
@@ -1480,7 +1564,7 @@ int main()
 					{
 						empilha_funcao(linha, &pListaVars, pListaFuncoes, &pListaFuncChamadas);
 						
-						printar_arquivo_tela_pos_atual(nome_programa_fonte, pos_main_exibir+1); //printar na tela posicao atual do main
+						printar_arquivo_tela_pos_atual(nome_programa_fonte, pos_main_exibir); //printar na tela posicao atual do main
 
 					}
 					
@@ -1497,7 +1581,7 @@ int main()
 		//system("cls");
 //		exibir_listas_vars(pListaVars);
 		
-		key=getch();	
+			key=getch();	
 	}
 	
 	fclose(arquivo_execucao);

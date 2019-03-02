@@ -1,3 +1,5 @@
+//#include "lista_pilha_variaveis.h"
+
 // -------------------------------------------- lista funcoes --------------------
 struct lista_funcoes
 {
@@ -8,7 +10,8 @@ struct lista_funcoes
 	StrDin * nome;
 	
 	pVars_prototipo * pListaVars_prototipo;
-	pLinhas_func * pListaLinhas_func;	
+	pLinhas_func * pListaLinhas_func;
+	pListaVar * pListaVarsInterna;	
 	
 	
 	struct lista_funcoes *prox;
@@ -21,7 +24,7 @@ void init_lista_func(pListaFunc ** ls)
 }
 
 void inserir_lista_func_fim(pListaFunc ** ls, int linha, int cont_linhas, int tipo, StrDin * nome, pVars_prototipo * vars_parametro, 
-	pLinhas_func * pListaLinhas_func)
+	pLinhas_func * pListaLinhas_func, pListaVar * pListaVarsInterna)
 {
 	pListaFunc * novo, *aux;
 	
@@ -35,6 +38,7 @@ void inserir_lista_func_fim(pListaFunc ** ls, int linha, int cont_linhas, int ti
 	//exibir_str(nome);
 	novo->pListaVars_prototipo = vars_parametro;
 	novo->pListaLinhas_func = pListaLinhas_func;
+	novo->pListaVarsInterna = pListaVarsInterna;
 	
 	if(*ls == NULL)
 		*ls = novo;
@@ -49,7 +53,7 @@ void inserir_lista_func_fim(pListaFunc ** ls, int linha, int cont_linhas, int ti
 
 
 void inserir_lista_func_inicio(pListaFunc ** ls, int linha, int cont_linhas, int tipo, StrDin * nome, pVars_prototipo * vars_parametro, 
-	pLinhas_func * pListaLinhas_func)
+	pLinhas_func * pListaLinhas_func, pListaVar * pListaVarsInterna)
 {
 	pListaFunc * novo, *aux;
 	
@@ -62,6 +66,7 @@ void inserir_lista_func_inicio(pListaFunc ** ls, int linha, int cont_linhas, int
 	//exibir_str(nome);
 	novo->pListaVars_prototipo = vars_parametro;
 	novo->pListaLinhas_func = pListaLinhas_func;
+	novo->pListaVarsInterna = pListaVarsInterna;
 	
 	novo->prox  = *ls;
 	*ls = novo;
@@ -75,6 +80,7 @@ void remover_inicio_func_no_return(pListaFunc ** pListaFuncChamadas)
 	{
 		reinit_lista_vars_argumento_func_rec(&(*pListaFuncChamadas)->pListaVars_prototipo);
 		remover_todas_linhas_interna_func_rec(&(*pListaFuncChamadas)->pListaLinhas_func);
+		reinit_listas_vars(&(*pListaFuncChamadas)->pListaVarsInterna);
 		reinit_str(&(*pListaFuncChamadas)->nome);
 		
 		aux = *pListaFuncChamadas;
@@ -123,7 +129,7 @@ pListaFunc * copy_funcao(pListaFunc * origin)
 	copy_lista_vars_prototipo_all(&lista_prototipo, origin->pListaVars_prototipo);
 	copy_ListaLinhas_func(&listaLinhas_func, origin->pListaLinhas_func);
 	
-	inserir_lista_func_inicio(&nova_func, linha, cont_linhas, tipo, nome, lista_prototipo, listaLinhas_func);
+	inserir_lista_func_inicio(&nova_func, linha, cont_linhas, tipo, nome, lista_prototipo, listaLinhas_func, NULL);
 	return nova_func;
 }
 
