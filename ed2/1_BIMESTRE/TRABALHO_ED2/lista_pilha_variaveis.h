@@ -78,11 +78,6 @@ void inserir_listas_vars_inicio(pListaVar ** lvm, StrDin * nome, StrDin * valor,
 
 void reinit_listas_vars(pListaVar ** lvm)
 {
-		//int endereco;
-//	StrDin * nome;
-//	StrDin * valor;
-//	int valor_endereco;
-//	char ponteiro;
 	pListaVar * aux;
 	if(*lvm != NULL)
 	{		
@@ -93,6 +88,22 @@ void reinit_listas_vars(pListaVar ** lvm)
 		free(aux);
 		reinit_listas_vars(&*lvm);
 	}
+}
+
+pListaVar * copy_listas_var(pListaVar * origin)
+{
+
+    pListaVar * novo = (pListaVar*) malloc(sizeof(pListaVar));
+    init_str(&(novo)->nome);
+    init_str(&(novo)->valor);
+    copy_str_rec(&(novo)->nome, origin->nome);
+    copy_str_rec(&(novo)->valor, origin->valor);
+    novo->endereco = origin->endereco;
+    novo->valor_endereco = origin->valor_endereco;
+    novo->ponteiro = origin->ponteiro;
+    novo->prox = NULL;
+    
+    return novo;
 }
 
 void remover_listas_vars_nome_no_return(pListaVar ** lvm, StrDin * nome) 

@@ -10,6 +10,20 @@ void init_lista_string(pListaString ** ls)
 	*ls = NULL;
 }
 
+void reinit_lista_string_strdin(pListaString **ls)
+{
+	pListaString * aux;
+	
+	if(*ls != NULL)
+	{
+		reinit_str(&(*ls)->str);
+		aux = *ls;
+		*ls = (*ls)->prox;
+		free(aux);
+		reinit_lista_string_strdin(&*ls);
+	}
+}
+
 void inserir_lista_string_strdin(pListaString ** ls, StrDin * str)
 {
 	pListaString * novo, * aux;

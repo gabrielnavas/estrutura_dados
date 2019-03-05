@@ -8,9 +8,10 @@ struct lista_funcoes
 	int cont_execucao; //total de linhas executadas
 	int cont_linhas; //total de linhas na funcao
 	StrDin * nome;
+	pListaVar * variavel_return; //variavel que recebe valor do return;
 	
 	pVars_prototipo * pListaVars_prototipo;
-	pLinhas_func * pListaLinhas_func;
+	pLinhas_func * pListaLinhas_func; 
 	pListaVar * pListaVarsInterna;	
 	
 	
@@ -21,6 +22,25 @@ typedef struct lista_funcoes pListaFunc;
 void init_lista_func(pListaFunc ** ls)
 {
 	*ls = NULL;
+}
+
+void reinit_lista_func(pListaFunc ** ls)
+{
+	pListaFunc * aux;
+	
+	if(*ls != NULL)
+	{
+		reinit_str(&(*ls)->nome);
+		reinit_listas_vars(&(*ls)->variavel_return);
+		reinit_lista_vars_argumento_func_rec(&(*ls)->pListaVars_prototipo);
+		reinit_lista_linhas_interna_func(&(*ls)->pListaLinhas_func);
+		reinit_listas_vars(&(*ls)->pListaVarsInterna);
+		
+		aux = *ls;
+		*ls = (*ls)->prox;
+		free(aux);
+		reinit_lista_func(&*ls);
+	}
 }
 
 void inserir_lista_func_fim(pListaFunc ** ls, int linha, int cont_linhas, int tipo, StrDin * nome, pVars_prototipo * vars_parametro, 
@@ -35,7 +55,7 @@ void inserir_lista_func_fim(pListaFunc ** ls, int linha, int cont_linhas, int ti
 	novo->cont_linhas = cont_linhas;
 	novo->cont_execucao = 0;
 	novo->nome = nome;
-	//exibir_str(nome);
+	novo->variavel_return = NULL;
 	novo->pListaVars_prototipo = vars_parametro;
 	novo->pListaLinhas_func = pListaLinhas_func;
 	novo->pListaVarsInterna = pListaVarsInterna;
@@ -86,9 +106,9 @@ void remover_inicio_func_no_return(pListaFunc ** pListaFuncChamadas)
 		aux = *pListaFuncChamadas;
 		*pListaFuncChamadas = (*pListaFuncChamadas)->prox;
 		free(aux);
-		
 	}
 }
+
 
 pListaFunc * buscar_lista_funcao_nome_chars(pListaFunc * l, char * nome)
 {

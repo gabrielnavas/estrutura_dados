@@ -39,6 +39,21 @@ void inserir_lista_vars_argumento_func(pVars_prototipo ** vc, int endereco, int 
 	}	
 }
 
+void remover_inicio(pVars_prototipo **vc)
+{
+	pVars_prototipo * aux;
+	
+	if(*vc != NULL)
+	{
+		reinit_str(&(*vc)->nome);
+		reinit_str(&(*vc)->valor);
+		
+		aux = *vc;
+		*vc = (*vc)->prox;
+		free(aux);
+	}
+}
+
 void reinit_lista_vars_argumento_func_rec(pVars_prototipo **vc)
 {
 	pVars_prototipo * aux;

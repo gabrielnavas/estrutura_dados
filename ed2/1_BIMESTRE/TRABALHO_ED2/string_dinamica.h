@@ -113,8 +113,6 @@ void exibir_str(StrDin * str)
 	}
 }
 
-
-
 void inserir_char(StrDin ** str, char ch)
 {
 	StrDin * novo, * aux;
