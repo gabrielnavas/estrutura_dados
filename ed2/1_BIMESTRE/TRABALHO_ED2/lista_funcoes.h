@@ -6,7 +6,7 @@ struct lista_funcoes
 	int tipo; // 0 void - 1 int - 2 float - 3 char - 4 double
 	int linha;
 	int cont_execucao; //total de linhas executadas
-	int cont_linhas; //total de linhas na funcao
+	int total_linhas; //total de linhas na funcao
 	StrDin * nome;
 	pListaVar * variavel_return; //variavel que recebe valor do return;
 	
@@ -43,7 +43,7 @@ void reinit_lista_func(pListaFunc ** ls)
 	}
 }
 
-void inserir_lista_func_fim(pListaFunc ** ls, int linha, int cont_linhas, int tipo, StrDin * nome, pVars_prototipo * vars_parametro, 
+void inserir_lista_func_fim(pListaFunc ** ls, int linha, int total_linhas, int tipo, StrDin * nome, pVars_prototipo * vars_parametro, 
 	pLinhas_func * pListaLinhas_func, pListaVar * pListaVarsInterna)
 {
 	pListaFunc * novo, *aux;
@@ -52,8 +52,8 @@ void inserir_lista_func_fim(pListaFunc ** ls, int linha, int cont_linhas, int ti
 	novo->prox  = NULL;
 	novo->tipo = tipo;
 	novo->linha = linha;
-	novo->cont_linhas = cont_linhas;
-	novo->cont_execucao = 0;
+	novo->total_linhas = total_linhas;
+	novo->cont_execucao = -1;
 	novo->nome = nome;
 	novo->variavel_return = NULL;
 	novo->pListaVars_prototipo = vars_parametro;
@@ -72,7 +72,7 @@ void inserir_lista_func_fim(pListaFunc ** ls, int linha, int cont_linhas, int ti
 }
 
 
-void inserir_lista_func_inicio(pListaFunc ** ls, int linha, int cont_linhas, int tipo, StrDin * nome, pVars_prototipo * vars_parametro, 
+void inserir_lista_func_inicio(pListaFunc ** ls, int linha, int total_linhas, int tipo, StrDin * nome, pVars_prototipo * vars_parametro, 
 	pLinhas_func * pListaLinhas_func, pListaVar * pListaVarsInterna)
 {
 	pListaFunc * novo, *aux;
@@ -80,10 +80,10 @@ void inserir_lista_func_inicio(pListaFunc ** ls, int linha, int cont_linhas, int
 	novo = (pListaFunc*) malloc(sizeof(pListaFunc));
 	novo->tipo = tipo;
 	novo->linha = linha;
-	novo->cont_linhas = cont_linhas;
-	novo->cont_execucao = 0;
+	novo->total_linhas = total_linhas;
+	novo->cont_execucao = -1;
 	novo->nome = nome;
-	//exibir_str(nome);
+	novo->variavel_return = NULL;
 	novo->pListaVars_prototipo = vars_parametro;
 	novo->pListaLinhas_func = pListaLinhas_func;
 	novo->pListaVarsInterna = pListaVarsInterna;
@@ -134,7 +134,7 @@ pListaFunc * copy_funcao(pListaFunc * origin)
 	int tipo, linha;
 	pVars_prototipo * lista_prototipo;
 	pLinhas_func * listaLinhas_func;
-	int cont_linhas;
+	int total_linhas;
 	int cont_execucao;
 	
 	init_lista_func(&nova_func);
@@ -142,14 +142,14 @@ pListaFunc * copy_funcao(pListaFunc * origin)
 	init_lista_vars_argumento_func(&lista_prototipo);
 	init_lista_linhas_interna_func(&listaLinhas_func);
 	
-	cont_linhas = origin->cont_linhas;
+	total_linhas = origin->total_linhas;
 	tipo = origin->tipo;
 	linha = origin->linha;
 	copy_str_rec(&nome, origin->nome);
 	copy_lista_vars_prototipo_all(&lista_prototipo, origin->pListaVars_prototipo);
 	copy_ListaLinhas_func(&listaLinhas_func, origin->pListaLinhas_func);
 	
-	inserir_lista_func_inicio(&nova_func, linha, cont_linhas, tipo, nome, lista_prototipo, listaLinhas_func, NULL);
+	inserir_lista_func_inicio(&nova_func, linha, total_linhas, tipo, nome, lista_prototipo, listaLinhas_func, NULL);
 	return nova_func;
 }
 

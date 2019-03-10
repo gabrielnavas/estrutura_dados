@@ -176,6 +176,7 @@ void strdin_to_chars_no_tl(StrDin * str, char * char_str)
 		i++;
 		str=str->prox;
 	}
+	char_str[i] = '\0';
 }
 
 void copy_str(StrDin ** dest, char * origin)
