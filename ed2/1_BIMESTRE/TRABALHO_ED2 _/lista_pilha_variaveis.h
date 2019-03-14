@@ -215,7 +215,6 @@ pListaVar * search_lista_vars_endereco(pListaVar * lvm, int endereco)
 
 void exibir_listas_vars(pListaVar * lv)
 {
-	
 	printf("&\tNOME\tVALOR\n");
 	while(lv != NULL)
 	{
