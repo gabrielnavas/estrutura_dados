@@ -7,23 +7,29 @@ int executa2(int p1, int *p2)
 	p=4;
 	p=4*2+1;
 	*p2=p;
-	return *p2;
+	
+	return p1;
 }
 
-void executa(int *t1, int *t2, int *t3)
+int executa(int *t1, int *t2, int *t3)
 {
 	int q=2, j=5;
-	*t2=3;
-	*t2 = executa2(q, t3);
-	return;
+	*t1 = q+2;
+	*t2 = *t3+4;
+	*t3 = executa2(q, &*t3);
+	
+	return j;
 }
 
 int main()
 {
 	int a=2,b=10,c;
-	a=executa2(a, &b);
-	printf("%d\n", a);
+	c = executa(&a, &b, &c);
+	printf("RESULTADO RETURN: %d\n", c);
 	a=3;
 	b=2;
 	c=3;
+	printf("RESULTADO A %d\n", a);
+	printf("RESULTADO B %d\n", b);
+	printf("RESULTADO C %d\n", c);
 }

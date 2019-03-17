@@ -7,6 +7,7 @@ struct lista_interna_func
 	3 declaracao variavel - 
 	4 - return function -
 	5 - chamda de funcao com retorno para variavel
+	6 - linha vazia
 	*/
 	int tipo; 
 	StrDin * linha;
