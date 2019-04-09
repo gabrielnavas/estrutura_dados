@@ -109,6 +109,8 @@ void exibir(ListaGen * l)
 		    printf("]");
 		}
     }
+    else
+    	printf("NULL");
 }
 
 void exibir_atomos(ListaGen * l)
@@ -398,13 +400,152 @@ void inserir_nivel_especifico(ListaGen ** l, char *info, int nivel)
 	}
 }
 
+void ordenar_nivel(ListaGen * l, int nivel, int cont)
+{
+	ListaGen * ante, *aux;
+	char info[8];
+	
+	if(!nulo(l) && !atomo(l))
+	{
+		if(cont == nivel)
+		{
+			ante = l;
+			while(!nulo(ante))
+			{
+				aux = tail(ante);
+				while(!nulo(aux))
+				{
+					if( !nulo(head(ante)) && atomo(head(ante)) && !nulo(head(aux)) && atomo(head(aux)))
+						if(strcmp(ante->no.lista.cabeca->no.info, aux->no.lista.cabeca->no.info) > 0)
+						{
+							strcpy(info, ante->no.lista.cabeca->no.info);
+							strcpy(ante->no.lista.cabeca->no.info, aux->no.lista.cabeca->no.info);
+							strcpy(aux->no.lista.cabeca->no.info, info);
+						}
+						
+					aux = tail(aux);	
+				}
+				
+				//if(!nulo(ante) && !nulo(tail(ante)))
+				ante = tail(ante);
+			}
+		}
+		else
+		{
+			ordenar_nivel(head(l), nivel, cont+1);
+			ordenar_nivel(tail(l), nivel, cont);
+		}
+	}
+}
+
+void excluir(ListaGen ** l, int nivel)
+{
+	ListaGen *aux, *ante, * aux2;
+	int cont;
+	Pilha * p;
+	
+	init(&p);
+	
+	if(nivel == 1)
+	{
+		while(!nulo(head(*l)) && atomo(head(*l)))
+		{
+			aux = *l;
+			*l = tail(*l);
+			free(aux->no.lista.cabeca);
+			free(aux);
+		}
+		
+		if(!nulo(*l))
+		{
+			ante = *l;
+			aux = tail(ante);
+		}
+		else
+			aux = NULL;
+		while(!nulo(aux))
+		{
+			if(!nulo(head(aux)) && atomo(head(aux)))
+			{
+				ante->no.lista.cauda = aux->no.lista.cauda;
+				free(aux->no.lista.cabeca);
+				free(aux);
+				aux = ante->no.lista.cauda;
+			}
+			else
+			{
+				ante = aux;
+				aux = tail(aux);
+			}
+		}	
+	}
+	else
+	{
+		cont = 1;
+		aux = *l;
+		push(&p, aux);
+		while(!isEmpty(p))
+		{
+			if(!nulo(aux))
+			{
+				pop(&p, &aux);
+				while(!nulo(aux) && !atomo(aux) && cont < nivel)
+				{
+					push(&p, aux);
+					aux = head(aux);
+					cont++;
+				}
+				
+				if(!nulo(aux) && !atomo(aux) && cont == nivel)
+				{
+					pop(&p , &aux2);
+					while(!nulo(aux) && !nulo(head(aux)) && atomo(head(aux)))
+					{
+						aux2->no.lista.cabeca = tail(aux);
+						free(aux->no.lista.cabeca);
+						free(aux);
+						aux = head(aux2);
+					}
+					if(!nulo(head(aux2)))
+					{
+						ante = head(aux2);
+						aux = tail(ante);
+					}
+					else
+						aux = NULL;
+					push(&p, aux2);
+					while(!nulo(aux))
+					{
+						if(!nulo(head(aux)) && atomo(head(aux)))
+						{
+							ante->no.lista.cauda = tail(aux);
+							free(aux->no.lista.cabeca);
+							free(aux);
+							aux = tail(ante);
+						}
+						else
+						{
+							ante = aux;
+							aux = tail(aux);
+						}
+					}	
+				}
+			}
+			cont--;
+			pop(&p, &aux);
+			aux = tail(aux);
+			if(!nulo(aux))
+				push(&p, aux);
+			
+		}
+	}
+	
+}
+
 int main()
 {
     ListaGen * l;
-	l = cons(NULL, cons(cons(cons(NULL, cons(cons(NULL, NULL), NULL)), NULL), cons(cons(NULL, cons(cons(NULL, cons(criat("A"), NULL)), NULL)), NULL)));
-	
-	
-	inserir_nivel_especifico(&l, "J\0", 2);
-
+    l = cons(cons(cons(criat("A"), cons(criat("B"), NULL)),NULL), cons(cons(cons(criat("C"), NULL), NULL),NULL));
+    excluir(&l, 3);
 	exibir(l);
 }

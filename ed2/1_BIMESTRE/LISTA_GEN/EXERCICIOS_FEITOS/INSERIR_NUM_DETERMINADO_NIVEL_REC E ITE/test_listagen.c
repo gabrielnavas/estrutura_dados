@@ -398,13 +398,129 @@ void inserir_nivel_especifico(ListaGen ** l, char *info, int nivel)
 	}
 }
 
+void inserir_nivel_ite(ListaGen ** lista, int nivel, char info[])
+{
+	Pilha * p;
+	PilhaInt * p_cont;
+	ListaGen * aux, *l;
+	int cont;
+	
+	init(&p);
+	init_int(&p_cont);
+	
+	if(nivel == 0)
+	{
+		if(nulo(* lista))
+			* lista = cons(criat(info), NULL);
+		else
+		{
+			aux = * lista;
+			while(!nulo(tail(aux)))
+				aux = tail(aux);
+			aux->no.lista.cauda = 	cons(criat(info), NULL);
+		}	
+	}
+	else
+	{
+		cont=0;
+		l = * lista;
+		push(&p, l);
+		push_int(&p_cont, cont);
+		while(!isEmpty(p))
+		{
+			if(!nulo(l))
+			{
+				pop(&p, &l);
+				pop_int(&p_cont, &cont);
+				while(!nulo(l) && !atomo(l) && cont < nivel)
+				{
+					push(&p, l);
+					push_int(&p_cont, cont);
+					l = head(l);
+					cont++;
+				}
+				
+				if(!nulo(l) && !atomo(l) && cont == nivel)
+				{
+					aux = l;
+					while(!nulo(tail(aux)))
+						aux = tail(aux);
+					aux->no.lista.cauda = cons(criat(info), NULL);
+					
+					pop(&p, &l);
+					pop_int(&p_cont, &cont);
+					
+					l = tail(l);
+					if(!nulo(l))
+					{
+						push(&p, l);
+						push_int(&p_cont, cont);	
+					}
+				}	
+			}
+			
+			if((nulo(l) || atomo(l)) && !isEmpty(p))
+			{
+				pop(&p, &l);
+				pop_int(&p_cont, &cont);
+				
+				l = tail(l);
+				if(!nulo(l))
+				{
+					push(&p, l);
+					push_int(&p_cont, cont);	
+				}
+				
+			}
+		}
+	}
+}
+
+void inserir_nivel_rec(ListaGen ** l, int cont, int nivel, char info[])
+{
+	ListaGen * aux;
+	
+	if(nivel == 0 && cont == 0)
+	{
+		if(nulo(*l))
+			*l = cons(criat(info), NULL);
+		else
+		{
+			aux = *l;
+			while(!nulo(tail(aux)))
+				aux = tail(aux);
+			aux->no.lista.cauda = cons(criat(info), NULL);
+		}	
+	}
+	else
+	{
+		if(!nulo(*l) && !atomo(*l))
+		{
+			if(cont < nivel)
+				inserir_nivel_rec(&(*l)->no.lista.cabeca, cont+1, nivel, info);
+			else
+			{
+				aux = *l;
+				while(!nulo(tail(aux)))
+					aux = tail(aux);
+				aux->no.lista.cauda = cons(criat(info), NULL);
+			}
+			
+			if(cont < nivel)
+			{
+				inserir_nivel_rec(&(*l)->no.lista.cauda, cont, nivel, info);
+			}	
+		}
+	}
+}
+
 int main()
 {
     ListaGen * l;
-	l = cons(NULL, cons(cons(cons(NULL, cons(cons(NULL, NULL), NULL)), NULL), cons(cons(NULL, cons(cons(NULL, cons(criat("A"), NULL)), NULL)), NULL)));
-	
-	
-	inserir_nivel_especifico(&l, "J\0", 2);
+    l = cons(cons(NULL, cons(cons(criat("A"), NULL), NULL)), cons(criat("K"), cons(cons(cons(criat("A"), NULL), cons(cons(criat("G"), NULL), NULL)), NULL)));
+//	inserir_nivel_ite(&l, 2, "gabriel");
+	inserir_nivel_rec(&l, 0, 10, "gabriel");
+//	inserir_nivel_especifico(&l, "J\0", 2);
 
 	exibir(l);
 }

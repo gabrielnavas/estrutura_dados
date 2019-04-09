@@ -398,13 +398,50 @@ void inserir_nivel_especifico(ListaGen ** l, char *info, int nivel)
 	}
 }
 
+void ordenar_nivel(ListaGen * l, int nivel, int cont)
+{
+	ListaGen * ante, *aux;
+	char info[8];
+	
+	if(!nulo(l) && !atomo(l))
+	{
+		if(cont == nivel)
+		{
+			ante = l;
+			while(!nulo(ante))
+			{
+				aux = tail(ante);
+				while(!nulo(aux))
+				{
+					if( !nulo(head(ante)) && atomo(head(ante)) && !nulo(head(aux)) && atomo(head(aux)))
+						if(strcmp(ante->no.lista.cabeca->no.info, aux->no.lista.cabeca->no.info) > 0)
+						{
+							strcpy(info, ante->no.lista.cabeca->no.info);
+							strcpy(ante->no.lista.cabeca->no.info, aux->no.lista.cabeca->no.info);
+							strcpy(aux->no.lista.cabeca->no.info, info);
+						}
+						
+					aux = tail(aux);	
+				}
+				
+				//if(!nulo(ante) && !nulo(tail(ante)))
+				ante = tail(ante);
+			}
+		}
+		else
+		{
+			ordenar_nivel(head(l), nivel, cont+1);
+			ordenar_nivel(tail(l), nivel, cont);
+		}
+	}
+}
+
 int main()
 {
     ListaGen * l;
-	l = cons(NULL, cons(cons(cons(NULL, cons(cons(NULL, NULL), NULL)), NULL), cons(cons(NULL, cons(cons(NULL, cons(criat("A"), NULL)), NULL)), NULL)));
-	
-	
-	inserir_nivel_especifico(&l, "J\0", 2);
-
+    l = cons(cons(cons(criat("gabriel"), 
+		cons(cons(criat("zebra"), cons(criat("gabriel"), cons(criat("abacaxi"), NULL))), NULL)), cons(criat("abacaxi"), NULL)), cons(criat("gabriel"), cons(criat("abacaxi"), cons(cons(cons(cons(criat("zebra"), cons(criat("abacaxi"), cons(NULL, NULL))), NULL), NULL), NULL))));
+    
+	ordenar_nivel(l, 3, 0);
 	exibir(l);
 }

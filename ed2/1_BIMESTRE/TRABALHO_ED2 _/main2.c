@@ -9,7 +9,7 @@
 //#include "chamadas_calculos_funcao.h"
 #include "linhas_func.h"
 
-#include "lista_pilha_variaveis.h" // lista de variaveis
+#include "lista_variaveis.h" // lista de variaveis
 #include "lista_funcoes.h"		   // lista de declaracoes de funcoes e funcoes de chamada;
 #include "lista_string.h" 		   // guardar printf's
 
@@ -438,10 +438,7 @@ void ler_funcao(pListaFunc ** pLista_Funcoes, char * line_read, int * linha_atua
 		(*linha_atual)++;
 		pos_line=0;
 	}
-	
-//	//COMO TAMANHO COMECA
-//	if(total_linhas > -1)
-//		total_linhas++;
+
 	
 	//insere na lista de funcoes;
 	inserir_lista_func_fim(&*pLista_Funcoes, linha_inicio_funcao_implementacoes, total_linhas, pTipo_func, pNome_func, pVars_argumentos, pLinhas_interna, NULL);
@@ -713,7 +710,6 @@ void split_variaveis_atribuicoes(char *linha, char saida[100][100], int *tl)
 	char *token = strtok(linha, split);
 	int i, i_linha, j;
 	while( token != NULL ) {
-		//printf( "%s\n", token );
 		if( strstr(token, "int") == NULL && 
 			strstr(token, "char") == NULL && 
 			strstr(token, "double") == NULL && 
@@ -755,11 +751,7 @@ void muda_valores_variaveis_calculo(pListaVar * search_var, char nome_variavel[1
 				aux_var_global = *pListaVars;
 				while(aux_var_global != NULL)
 				{
-//					printf("\nvalor_pont = %d", aux_var_global->valor_endereco);
-//					
-//					printf("\nvalor_endereco = %d\n" ,aux_var_global->endereco);
-					
-					
+
 					if(aux_var_global->ponteiro && aux_var_global->valor_endereco == var_prototipo->valor_endereco)
 					{
 						reinit_str((&(aux_var_global)->valor));
@@ -864,6 +856,15 @@ void inserir_variaveis_declaracao_dentro_funcao(pListaVar ** pListaVars,
 			//INSERE NA PILHA DE VARIAVEIS GLOBAIS
 			inserir_listas_vars_inicio(&*pListaVars, nome, valor, 0, ponteiro); 
 			
+			
+			
+//			printf("\n");
+//			exibir_str(valor);
+//			
+//			printf("\n");
+//			exibir_str(nome);
+			
+			
 			//INSERIR NA FUNCAO DE CHAMADA TAMBEM TAMBEM
 			if(pListaFuncChamadas != NULL)
 			{
@@ -889,8 +890,8 @@ void inserir_variaveis_declaracao_dentro_funcao(pListaVar ** pListaVars,
 			search_nome->valor = valor;
 		}
 		
-		init_str(&nome); //DESREFERENCIA POS JA ADD NA LISTA
-		init_str(&valor); //DESREFERENCIA POS JA ADD NA LISTA
+		nome = NULL; //DESREFERENCIA POS JA ADD NA LISTA
+		valor = NULL; //DESREFERENCIA POS JA ADD NA LISTA
 	}
 }
 
@@ -1217,7 +1218,6 @@ char executa_linhas_funcao_chamadas(pListaFunc **pListaFuncChamadas,
 	int tipo, tl;
 	
 	pLinhas_func * linhas = (*pListaFuncChamadas)->pListaLinhas_func; // CABECA DA LISTA DAS LINHAS DA FUNCAO
-//	exibir_str(linhas->linha);
 	
 	if( !isEmpty_lista_linhas_interna_func(linhas))
 	{
@@ -1301,9 +1301,6 @@ void split_printf(char *linha, char saida[100][50], int * tl)
 			i++;
 	}		
 }
-
-
-
 
 StrDin * tratar_argumentos_printf(char saida[100][50], int argumentos, pListaVar * pListaVars)
 {
@@ -1799,14 +1796,24 @@ void pega_nome_arquivo(char * nome)
 	{
 		system("cls");
 		
-		printf("NOME: ");
+		textcolor(2);
+		textbackground(14);
+		printf("\n\n\t\t**** SEJA BEM VINDO AO DEBUG NAVAS ****");
+		textbackground(0);
+		
+		textcolor(14);
+		printf("\n\n\tNOME DO ARQUIVO: ");
 		fflush(stdin);	gets(nome);	
 		
 		arq = fopen(nome, "r");
 		
 		if(strlen(nome) <= 0 || arq == NULL)
 		{
-			printf("NOME INCORRETO.\nENTER PARA CONTINUAR");
+			textcolor(4);
+			printf("\n\n\tNOME INCORRETO.");
+			
+			textcolor(1);
+			printf("\n\n\tENTER PARA CONTINUAR");
 			getch();
 		}
 		
@@ -1826,10 +1833,12 @@ void carregar_inicio_programa_fonte(pListaFunc ** pListaFuncoes, pListaFunc ** p
 		fclose(*arq);
 		
 		//INICIAR OU REINICIAR LISTAS;
-		reinit_lista_string_strdin(&*pListaPrintfs);
 		reinit_lista_func(&*pListaFuncChamadas);
 		reinit_lista_func(&*pListaFuncoes);
 		reinit_listas_vars(&*pListaVars);
+		reinit_lista_string_strdin(&*pListaPrintfs);
+		
+		
 	}
 	else
 	{
@@ -1853,6 +1862,7 @@ void carregar_inicio_programa_fonte(pListaFunc ** pListaFuncoes, pListaFunc ** p
 	
 	//posicionar no arquivo na primeira implementacao do main.
 	*arq = fopen(nome_programa_fonte, "r");
+	
 	posicionar_linha_implementacao_main(*arq, *pos_main_exibir);
 }
 
@@ -1871,6 +1881,7 @@ int main()
 	char saida[100][100];
 	int tl;
 	char key1, key2; //OPERACAO DE MENU PRINCIPAL;
+	
 	arquivo_codigo = NULL; 
 	
 	carregar_inicio_programa_fonte( &pListaFuncoes,
@@ -1893,29 +1904,27 @@ int main()
 				ler_linha_arquivo_main(arquivo_codigo, linha);
 				
 				//ENTRA NA FUNCAO E EXECUTA AS LINHAS
-				if( eh_chamada_de_funcao(linha) ||  
-					eh_variavel_com_chamada_de_funcao(linha) && 
-					!eh_printf(linha))/* && 
-						!eh_calculo_in_funcao(linha)))*/
+				if( eh_chamada_de_funcao(linha) || eh_variavel_com_chamada_de_funcao(linha) && !eh_printf(linha))
 				{
 					if(eh_chamada_de_funcao(linha) && strstr(linha, "=") == NULL)
 						empilha_funcao(linha, &pListaVars, pListaFuncoes, &pListaFuncChamadas);
 					else if(eh_variavel_com_chamada_de_funcao(linha) && !eh_printf(linha))
 						empilha_funcao_com_variavel_return(linha, &pListaVars, pListaFuncoes, &pListaFuncChamadas);
 						
-					executa_pilha_chamadas_funcoes(pListaFuncoes, 
-													&pListaFuncChamadas, 
-													&pListaVars, 
-													&pListaPrintfs, 
-													pos_main_exibir,
-													nome_programa_fonte);	
+					executa_pilha_chamadas_funcoes(pListaFuncoes, &pListaFuncChamadas, &pListaVars, 
+													&pListaPrintfs, pos_main_exibir, nome_programa_fonte);	
 				}
 				else
 				{
+					//ACABOU PROGRAMA.
 					if(strstr(linha, "}") != NULL || feof(arquivo_codigo))
 					{
 						printar_arquivo_tela_pos_atual(nome_programa_fonte, pos_main_exibir);
+						
+						textbackground(9);
+						textcolor(14);
 						printf("\n\n\t\t[ * ] - Programa chegou ao fim. :)");
+						textbackground(0);
 					}
 					else
 					{
@@ -1923,7 +1932,7 @@ int main()
 						if(eh_return(linha)) 
 							key1 = 'q';
 						
-						//printf de saida
+						//PRINTF
 						else if(eh_printf(linha))
 						{
 							guardar_printf(linha, &pListaPrintfs, pListaVars);
@@ -2023,7 +2032,5 @@ int main()
 	fclose(arquivo_codigo);
 
     return 0;
-
 }
-
 

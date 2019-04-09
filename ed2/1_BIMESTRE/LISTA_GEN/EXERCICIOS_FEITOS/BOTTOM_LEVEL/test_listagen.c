@@ -263,7 +263,7 @@ ListaGen * nth(ListaGen * l)
 	return ln;
 }
 
-int deph(ListaGen * l)
+int deph_ita(ListaGen * l)
 {
 	Pilha *p;
 	PilhaInt *p_cout;
@@ -398,13 +398,99 @@ void inserir_nivel_especifico(ListaGen ** l, char *info, int nivel)
 	}
 }
 
+void ordenar_nivel(ListaGen * l, int nivel, int cont)
+{
+	ListaGen * ante, *aux;
+	char info[8];
+	
+	if(!nulo(l) && !atomo(l))
+	{
+		if(cont == nivel)
+		{
+			ante = l;
+			while(!nulo(ante))
+			{
+				aux = tail(ante);
+				while(!nulo(aux))
+				{
+					if( !nulo(head(ante)) && atomo(head(ante)) && !nulo(head(aux)) && atomo(head(aux)))
+						if(strcmp(ante->no.lista.cabeca->no.info, aux->no.lista.cabeca->no.info) > 0)
+						{
+							strcpy(info, ante->no.lista.cabeca->no.info);
+							strcpy(ante->no.lista.cabeca->no.info, aux->no.lista.cabeca->no.info);
+							strcpy(aux->no.lista.cabeca->no.info, info);
+						}
+						
+					aux = tail(aux);	
+				}
+				
+				//if(!nulo(ante) && !nulo(tail(ante)))
+				ante = tail(ante);
+			}
+		}
+		else
+		{
+			ordenar_nivel(head(l), nivel, cont+1);
+			ordenar_nivel(tail(l), nivel, cont);
+		}
+	}
+}
+
+void deph_rec(ListaGen * l, int cont, int * n)
+{
+	if(!nulo(l))
+	{
+		if(!atomo(l))
+		{
+			if(cont > *n)
+				*n = cont;
+			deph_rec(head(l), cont+1, &*n);
+			deph_rec(tail(l), cont, &*n);	
+		}
+	}
+}
+
+void bottom_level(ListaGen *l, int prof, int cont)
+{
+	ListaGen * aux, *auxtail; 
+	int auxcont;
+	
+	if(!nulo(l) && !atomo(l))
+	{
+		auxcont = cont;
+		if(atomo(head(l)) && auxcont < prof)
+		{
+			auxtail = l;
+			while(auxcont < prof)
+			{
+				aux = head(l);
+				l->no.lista.cabeca = cons(NULL, NULL);
+				l = head(l);
+				l->no.lista.cabeca = aux;
+				auxcont++;
+			}
+			bottom_level(tail(auxtail), prof, cont);
+		}
+		else
+		{
+			bottom_level(head(l), prof, cont+1);
+			bottom_level(tail(l), prof, cont);
+		}
+	}
+}
+
 int main()
 {
     ListaGen * l;
-	l = cons(NULL, cons(cons(cons(NULL, cons(cons(NULL, NULL), NULL)), NULL), cons(cons(NULL, cons(cons(NULL, cons(criat("A"), NULL)), NULL)), NULL)));
+    l = cons(cons(cons(criat("A"), NULL), NULL), cons(cons(criat("B"), cons(criat("C"), NULL)), cons(cons(cons(criat("D"), NULL), NULL), NULL)));
+    
+    printf("\n\n");
+	exibir(l);
 	
+	int prof=0;
+	deph_rec(l,0, &prof);
+	bottom_level(l, prof, 0);
 	
-	inserir_nivel_especifico(&l, "J\0", 2);
-
+    printf("\n\n");
 	exibir(l);
 }

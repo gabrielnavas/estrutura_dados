@@ -398,13 +398,85 @@ void inserir_nivel_especifico(ListaGen ** l, char *info, int nivel)
 	}
 }
 
+void inserir_nivel_ite(ListaGen ** lista, int nivel, char info[])
+{
+	ListaGen * aux, *l;
+	Pilha * p;
+	int flag_insercao,
+		cont;
+	
+	init(&p);
+	flag_insercao=0;
+	cont = 1;
+	if(nulo(*lista))
+		*lista = cons(criat(info), NULL);
+	else
+	{
+		l = *lista;
+		push(&p, l);
+		while(!isEmpty(p))
+		{
+			if(!nulo(l))
+			{
+				pop(&p, &l);
+				while(!nulo(l) && !atomo(l) && cont < nivel)
+				{
+					push(&p, l);
+					l = head(l);
+					cont++;
+				}
+				
+				if(!nulo(l) && !atomo(l) && cont == nivel)
+				{
+					if(nulo(head(l)))
+						l->no.lista.cabeca = cons(criat(info), NULL);
+					else
+					{
+						aux = head(l);
+						while(!nulo(tail(aux)))
+							aux = tail(aux);
+						aux->no.lista.cauda = cons(criat(info), NULL);
+				 	}
+					
+					flag_insercao = 1;	
+				}
+			}
+			
+			cont--;
+			pop(&p, &l);
+			l = tail(l);
+			if(!nulo(l))
+				push(&p, l);
+		}
+		
+	}	
+	if(!flag_insercao)
+	{
+		l = *lista;
+		while(!nulo(tail(l)))
+			l = tail(l);
+		cont=1;
+		(l)->no.lista.cauda = 	cons(NULL, NULL);
+		while(cont < nivel)
+		{
+			l = head(l);
+			l->no.lista.cabeca = 	cons(NULL, NULL);
+			cont++;
+		}
+		
+		l->no.lista.cabeca = cons(criat(info), NULL);
+	}
+}
+
 int main()
 {
     ListaGen * l;
-	l = cons(NULL, cons(cons(cons(NULL, cons(cons(NULL, NULL), NULL)), NULL), cons(cons(NULL, cons(cons(NULL, cons(criat("A"), NULL)), NULL)), NULL)));
+	l = cons(cons(criat("A"), NULL), cons(NULL, cons(cons(NULL, cons(cons(criat("A"), cons(NULL, NULL)), NULL)), NULL)));
 	
+	exibir(l);
 	
-	inserir_nivel_especifico(&l, "J\0", 2);
-
+	printf("\n\n");
+	inserir_nivel_ite(&l, 2, "GUSTAVO");
+	
 	exibir(l);
 }

@@ -17,6 +17,7 @@ void reinit_lista_string_strdin(pListaString **ls)
 	if(*ls != NULL)
 	{
 		reinit_str(&(*ls)->str);
+		(*ls)->str = NULL;
 		aux = *ls;
 		*ls = (*ls)->prox;
 		free(aux);
