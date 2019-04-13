@@ -31,7 +31,7 @@ void reinit_lista_func(pListaFunc ** ls)
 	if(*ls != NULL)
 	{
 		reinit_str(&(*ls)->nome);
-//		reinit_listas_vars(&(*ls)->variavel_return);
+		reinit_listas_vars(&(*ls)->variavel_return);
 		reinit_lista_vars_argumento_func_rec(&(*ls)->pListaVars_prototipo);
 		reinit_lista_linhas_interna_func(&(*ls)->pListaLinhas_func);
 		reinit_listas_vars(&(*ls)->pListaVarsInterna);

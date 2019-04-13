@@ -18,14 +18,11 @@ void reinit_str(StrDin ** str)
 	while(*str != NULL)
 	{
 		aux = *str;
-//		char auxch = (*str)->ch;
-//		printf("%c", auxch);
 		*str = (*str)->prox;
 		free(aux);	
 	}
 }
 
-//ISSO TA ERRADO
 void reinit_str_rec(StrDin ** str)
 {
 	if(*str != NULL)
