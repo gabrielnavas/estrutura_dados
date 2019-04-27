@@ -15,17 +15,6 @@ void init(Tree **t)
     *t = NULL;
 }
 
-void inserir_freq(int freq[], char * str)
-{
-    int i;
-
-    for(i=0 ; i < 256 ; i++)
-		freq[i] = 0;
-
-    for(i=0 ; str[i] != '\0' ; i++)
-		freq[str[i]]++;
-}
-
 Tree * criarNo(Tree * esq, Tree * dir, int freq, char info)
 {
     Tree * novo;
@@ -39,61 +28,82 @@ Tree * criarNo(Tree * esq, Tree * dir, int freq, char info)
 	return novo;
 }
 
+void inserir_freq(int freq[], char * str)
+{
+    int i;
+
+	//ZERAR TODO VETOR
+    for(i=0 ; i < 256 ; i++)
+		freq[i] = 0;
+
+	//INSERIR NA POSICAO CORRETA A SUA FREQUENCIA
+    for(i=0 ; str[i] != '\0' ; i++)
+		freq[str[i]]++;
+}
+
+
 void inserirF(Tree * floresta[], int * tl_flor, Tree * arvore)
 {
+	//INSERE ORDENADO
+	
     int i;
     
     i = *tl_flor;
     while(i > 0 && arvore->freq > floresta[i-1]->freq)
     {
+    	//VAI RETIRANDO ATE ENCONTRAR A POSICAO CERTA
 		floresta[i] = floresta[i-1];
 		i--;
     }
 	
-//	printf("%c\n", arvore->info);
     floresta[i] = arvore;
     (*tl_flor)++;
 }
 
 void removerF(Tree * floresta[], int *tl_flor, Tree ** arvore)
 {
+	//RETIRA DA ULTIMA POSICAO
+	
     if(*tl_flor > 0)
 		*arvore = floresta[ --(*tl_flor) ];
     else
 		*arvore=  NULL;
 }
 
-void inserir_floresta(Tree *floresta[], int *tl_flor, int freq[])
-{
-    int i;
-
-    for(i=0 ; i < 256 ; i++)
-		if(freq[i] > 0)
-		    inserirF(floresta, &*tl_flor, criarNo(NULL, NULL, freq[i], i));
-}
-
 Tree * huffman(char *str)
 {
     Tree * floresta[256],
-	 * esq,
-	 * dir;
+	 	 * esq,
+	 	 * dir;
 
-    int tl_flor;
-    int freq[256];
-
+    int tl_flor,
+		freq[256],
+		i;
+	
     tl_flor=0;
     
+    //INSERIR NO VETOR DE FREQUENCIA AS OCORRENCIAS DE CARACTERES
     inserir_freq(freq, str);
 
-    inserir_floresta(floresta, &tl_flor, freq);
-
-    while(tl_flor > 1)
+	//INSERIR NA FLORESTA USANDO O VETOR DE FREQUENCIA
+    for(i=0 ; i < 256 ; i++)
+		if(freq[i] > 0)
+		    inserirF(floresta, &tl_flor, criarNo(NULL, NULL, freq[i], i));
+    
+	//RETIRAR DO VETOR ESQ E DIR QUE JA ESTA ORDENADO E INSERIR NA ARVORE
+	while(tl_flor > 1)
     {
+    	//REMOVE tl-1 = dir
 		removerF(floresta, &tl_flor, &dir);
+		
+    	//REMOVE tl-1 = esq
 		removerF(floresta, &tl_flor, &esq);
+		
+		//INSERE ORDENADO O NO COM ESQ E DIREITA E A SOMATORIA DA FREQ
 		inserirF(floresta, &tl_flor, criarNo(esq, dir, (esq->freq + dir->freq), '-')); 
     }
-
+	
+	//RETORNA A ARVORE FORMADA
     return floresta[0];
 }
 
@@ -116,32 +126,6 @@ void exibir_arvore(Tree * arvore, int * n)
     }
 }
 
-void codigo(Tree * no, char cod[], int *tl_cod)
-{
-    if(no != NULL)
-    {
-		int i;
-		
-	    if(no != NULL)
-	    {
-			if(no->esq == NULL && no->dir == NULL)
-			    printf("%c: %s\n", no->info, cod);
-			else
-			{
-			    (*tl_cod)++;
-			    
-			    cod[*tl_cod] = '0';
-			    codigo(no->esq,  cod, &*tl_cod);
-			    
-			    cod[*tl_cod] = '1';
-			    codigo(no->dir, cod, &*tl_cod);
-		
-			    (*tl_cod)--;
-			}
-	    }
-    }
-}
-
 void tabela(Tree * no, char tab[][256], char codigo[], int *tl_cod)
 {
 	int i;
@@ -149,7 +133,11 @@ void tabela(Tree * no, char tab[][256], char codigo[], int *tl_cod)
     if(no != NULL)
     {
 		if(no->esq == NULL && no->dir == NULL)
-		    strcpy(tab[ no->info ], codigo);
+		{
+			codigo[(*tl_cod) + 1] = '\0';
+			strcpy(tab[ no->info ], codigo);
+		}
+		    
 		else
 		{
 		    (*tl_cod)++;
@@ -164,53 +152,75 @@ void tabela(Tree * no, char tab[][256], char codigo[], int *tl_cod)
     }
 }
 
-void gerar_tabela(Tree * no, char tab[256][256])
+void comprimir(char * str, Tree* no, char *saida)
 {
-	int tl_cod,
-		i;
+	char tab[256][256],
+		 codigo[256];
 	
-	char aux_codigo[256];
-	
+	int tl_cod, //TL PARA AUX_CODIGO
+		i; 		//CODIGO PARA GERAR CODIGO DE CADA CARACTER
+
 	tl_cod = -1;
+	codigo[0]='\0';	
 	
-	for(i=0 ; i < 256 ; i++)
-		tab[i][0] = '\0';
+	//GERA TABELA
+	tabela(no, tab, codigo, &tl_cod);	
+	
+	saida[0] = '\0'; //init var
+	//GERAR CODIGO
+	for(i=0 ; str[i] != '\0' ; i++)
+		strcat(saida, tab[str[i]]);
 		
-	tabela(no, tab, aux_codigo, &tl_cod);	
 }
 
-void exibir_codigo(Tree * no)
+void descomprimir(char * codigo, Tree* raiz, char *saida)
 {
-	int tl_cod;	
-	char aux_codigo[256];
+	int i,
+		j;
+	Tree * n;
 	
-	tl_cod = -1;
+	n=raiz;
+	for(i=0, j=0 ; codigo[i] !='\0' ; i++)
+	{
+		n = (codigo[i] == '0') ? n->esq : n->dir;
+		
+		if(n != NULL && n->dir == NULL && n->esq == NULL)
+		{
+			saida[j] = n->info;
+			n = raiz;
+			j++;
+		}
+	}
 	
-	codigo(no, aux_codigo, &tl_cod);	
-}
-
-
-void exibir_tabela(char tab[256][256])
-{
-	int i;
-	
-	for(i=0 ; i < 256 ; i++)
-		if(strlen(tab[i]) > 0)
-			printf("%s\n", tab[i]);	
+	//FINALIZA SAIDA
+	saida[j]='\0';
 }
 
 int main()
 {
-    char tabela[256][256];
-	int n;
+ 	char str_saida[1000],
+	 	 str[1000] = "Abracadabra!\0",
+		 codigo[1000];
     
+    int n;
+    
+    //ARVORE USADA PARA CRIACAO DO HUFFMAN
 	Tree * raiz;
 	
-	raiz = huffman("Abracadabra!\0");
-      
-//    exibir_codigo(raiz);
-
-    gerar_tabela(raiz, tabela); 
+	//GERA ARVORE DE HUFFMAN
+	raiz=huffman(str);
 	
-	exibir_tabela (tabela);
+	//EXIBIR ARVORE
+	n=-1;
+	exibir_arvore(raiz, &n);
+	
+
+	//GERA CODIGO A PARTIR DA STRING
+	comprimir(str, raiz, codigo);
+	printf("STRING: %s GEROU CODIGO %s\n", str, codigo);
+		
+	
+	//GERA STRING A PARTIR DO CODIGO
+	descomprimir(codigo, raiz, str_saida);
+	printf("CODIGO %s GEROU STRING: %s\n", codigo, str_saida);
 }
